@@ -1,0 +1,263 @@
+{
+  "conjunto": "test",
+  "fecha": "2026-11-06T23:29:23.616Z",
+  "ejemplos_entrenamiento": 290,
+  "ejemplos_validacion": 49,
+  "intenciones": 20,
+  "exactitud": 0.7959,
+  "f1_macro": 0.7722,
+  "umbral_confianza": 0.3,
+  "latencia_media_ms": 1.129,
+  "exactitud_enrutamiento": 0.8367,
+  "errores_enrutamiento": [
+    {
+      "texto": "compara las creatinas que tienen",
+      "esperada": "transaccional",
+      "obtenida": "conocimiento"
+    },
+    {
+      "texto": "para que sirven los aminoacidos",
+      "esperada": "conocimiento",
+      "obtenida": "transaccional"
+    },
+    {
+      "texto": "llegan a masaya",
+      "esperada": "conocimiento",
+      "obtenida": "aclaracion"
+    },
+    {
+      "texto": "como cambio cuantas unidades llevo",
+      "esperada": "conocimiento",
+      "obtenida": "aclaracion"
+    },
+    {
+      "texto": "cuantas veces entreno espalda",
+      "esperada": "conocimiento",
+      "obtenida": "aclaracion"
+    },
+    {
+      "texto": "quien canta esa cancion",
+      "esperada": "fuera_de_dominio",
+      "obtenida": "aclaracion"
+    },
+    {
+      "texto": "como hago una pagina web",
+      "esperada": "fuera_de_dominio",
+      "obtenida": "conocimiento"
+    },
+    {
+      "texto": "que me recomiendas ver en netflix",
+      "esperada": "fuera_de_dominio",
+      "obtenida": "transaccional"
+    }
+  ],
+  "seguridad_medica": {
+    "interceptadas": 4,
+    "total": 4,
+    "falsos_positivos": []
+  },
+  "por_intencion": [
+    {
+      "intent": "saludo",
+      "soporte": 2,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "despedida",
+      "soporte": 2,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "ayuda",
+      "soporte": 2,
+      "precision": 0.667,
+      "recall": 1,
+      "f1": 0.8
+    },
+    {
+      "intent": "info_producto",
+      "soporte": 3,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "buscar_producto",
+      "soporte": 3,
+      "precision": 0.667,
+      "recall": 0.667,
+      "f1": 0.667
+    },
+    {
+      "intent": "precio_disponibilidad",
+      "soporte": 4,
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1": 0.75
+    },
+    {
+      "intent": "comparar_productos",
+      "soporte": 3,
+      "precision": 0.667,
+      "recall": 0.667,
+      "f1": 0.667
+    },
+    {
+      "intent": "info_categoria_suplemento",
+      "soporte": 3,
+      "precision": 0.5,
+      "recall": 0.667,
+      "f1": 0.571
+    },
+    {
+      "intent": "recomendacion_general",
+      "soporte": 2,
+      "precision": 0.667,
+      "recall": 1,
+      "f1": 0.8
+    },
+    {
+      "intent": "metodos_pago",
+      "soporte": 2,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "envios",
+      "soporte": 2,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "horarios",
+      "soporte": 2,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "politicas",
+      "soporte": 2,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "contacto",
+      "soporte": 2,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "estado_pedido",
+      "soporte": 2,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "proceso_compra",
+      "soporte": 2,
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5
+    },
+    {
+      "intent": "info_entrenamiento",
+      "soporte": 2,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+    },
+    {
+      "intent": "info_nutricion_deportiva",
+      "soporte": 2,
+      "precision": 0.667,
+      "recall": 1,
+      "f1": 0.8
+    },
+    {
+      "intent": "consulta_medica_sensible",
+      "soporte": 4,
+      "precision": 0.8,
+      "recall": 1,
+      "f1": 0.889
+    },
+    {
+      "intent": "fuera_de_dominio",
+      "soporte": 3,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+    }
+  ],
+  "errores": [
+    {
+      "texto": "estoy buscando creatina",
+      "esperado": "buscar_producto",
+      "obtenido": "consulta_medica_sensible",
+      "confianza": 0.35
+    },
+    {
+      "texto": "cuanto esta la creatina de muscletech",
+      "esperado": "precio_disponibilidad",
+      "obtenido": "comparar_productos",
+      "confianza": 0.447
+    },
+    {
+      "texto": "compara las creatinas que tienen",
+      "esperado": "comparar_productos",
+      "obtenido": "info_categoria_suplemento",
+      "confianza": 0.451
+    },
+    {
+      "texto": "para que sirven los aminoacidos",
+      "esperado": "info_categoria_suplemento",
+      "obtenido": "buscar_producto",
+      "confianza": 0.496
+    },
+    {
+      "texto": "como cambio cuantas unidades llevo",
+      "esperado": "proceso_compra",
+      "obtenido": "precio_disponibilidad",
+      "confianza": 0.397
+    },
+    {
+      "texto": "que rutina para piernas me sirve",
+      "esperado": "info_entrenamiento",
+      "obtenido": "info_categoria_suplemento",
+      "confianza": 0.408
+    },
+    {
+      "texto": "cuantas veces entreno espalda",
+      "esperado": "info_entrenamiento",
+      "obtenido": "info_nutricion_deportiva",
+      "confianza": 0.288
+    },
+    {
+      "texto": "quien canta esa cancion",
+      "esperado": "fuera_de_dominio",
+      "obtenido": "ayuda",
+      "confianza": 0.227
+    },
+    {
+      "texto": "como hago una pagina web",
+      "esperado": "fuera_de_dominio",
+      "obtenido": "proceso_compra",
+      "confianza": 0.465
+    },
+    {
+      "texto": "que me recomiendas ver en netflix",
+      "esperado": "fuera_de_dominio",
+      "obtenido": "recomendacion_general",
+      "confianza": 0.6
+    }
+  ]
+}

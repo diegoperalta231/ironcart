@@ -1,0 +1,34 @@
+{
+  "name": "ironcart",
+  "private": true,
+  "version": "1.0.0",
+  "description": "IronCart: tienda de suplementos deportivos con el asistente de IA Spot (Claude + PostgreSQL + RAG). Proyecto académico.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "netlify dev",
+    "dev:front": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "db:knowledge": "node scripts/build-knowledge-seed.mjs",
+    "eval:nlu": "tsx scripts/eval-nlu.ts && tsx scripts/eval-nlu.ts --test",
+    "test:api": "node scripts/test-api.mjs",
+    "test:ui": "node scripts/test-ui.mjs"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "tailwindcss": "^4.1.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0",
+    "vite": "^7.0.0"
+  }
+}

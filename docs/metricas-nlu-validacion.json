@@ -1,0 +1,179 @@
+{
+  "conjunto": "validacion",
+  "fecha": "2026-11-06T23:29:23.294Z",
+  "ejemplos_entrenamiento": 290,
+  "ejemplos_validacion": 80,
+  "intenciones": 20,
+  "exactitud": 0.9875,
+  "f1_macro": 0.9883,
+  "umbral_confianza": 0.3,
+  "latencia_media_ms": 1.067,
+  "exactitud_enrutamiento": 0.975,
+  "errores_enrutamiento": [
+    {
+      "texto": "me llego roto el shaker",
+      "esperada": "conocimiento",
+      "obtenida": "transaccional"
+    },
+    {
+      "texto": "cuantas veces a la semana entreno",
+      "esperada": "conocimiento",
+      "obtenida": "aclaracion"
+    }
+  ],
+  "seguridad_medica": {
+    "interceptadas": 5,
+    "total": 5,
+    "falsos_positivos": []
+  },
+  "por_intencion": [
+    {
+      "intent": "saludo",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "despedida",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "ayuda",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "info_producto",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "buscar_producto",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "precio_disponibilidad",
+      "soporte": 5,
+      "precision": 0.833,
+      "recall": 1,
+      "f1": 0.909
+    },
+    {
+      "intent": "comparar_productos",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "info_categoria_suplemento",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "recomendacion_general",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "metodos_pago",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "envios",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "horarios",
+      "soporte": 3,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "politicas",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 0.75,
+      "f1": 0.857
+    },
+    {
+      "intent": "contacto",
+      "soporte": 3,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "estado_pedido",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "proceso_compra",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "info_entrenamiento",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "info_nutricion_deportiva",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "consulta_medica_sensible",
+      "soporte": 5,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "intent": "fuera_de_dominio",
+      "soporte": 4,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    }
+  ],
+  "errores": [
+    {
+      "texto": "me llego roto el shaker",
+      "esperado": "politicas",
+      "obtenido": "precio_disponibilidad",
+      "confianza": 0.307
+    }
+  ]
+}

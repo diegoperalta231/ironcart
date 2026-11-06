@@ -1,0 +1,1446 @@
+{
+  "base": "http://localhost:8888",
+  "fecha": "2026-11-06T23:44:39.930Z",
+  "salud": {
+    "ok": true,
+    "base_de_datos": "conectada",
+    "ia": "configurada",
+    "modelo": "claude-haiku-5-5",
+    "rag": "texto (FTS PostgreSQL)",
+    "detalle": {
+      "pgvector": false,
+      "productos": 40,
+      "documentos": 33
+    }
+  },
+  "resultados": [
+    {
+      "id": "TC-01",
+      "nombre": "Consulta de producto con datos reales (Gold Standard 5 lb)",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "HTTP 200",
+          "ok": true,
+          "detail": {
+            "conversacion_id": "460caeb8-bfbd-4c75-bb0d-d4dfaf6862f7",
+            "respuesta": "[STUB] ruta=transaccional; turnos=1; productos=Gold Standard 100% Whey $62.99; documentos=-",
+            "productos": [
+              {
+                "id": 8,
+                "slug": "gold-standard-whey-5lb",
+                "nombre": "Gold Standard 100% Whey",
+                "marca": "Optimum Nutrition",
+                "categoria": "Proteínas",
+                "categoria_slug": "proteinas",
+                "presentacion": "5 lb (2.27 kg)",
+                "sabor": "Doble chocolate",
+                "porciones": 74,
+                "precio": 62.99,
+                "precio_anterior": 69.99,
+                "stock": 3,
+                "estado_disponibilidad": "pocas_unidades",
+                "imagen": "tub",
+                "color": "#E3B341"
+              }
+            ],
+            "fuentes": [],
+            "meta": {
+              "intent": "precio_disponibilidad",
+              "confianza": 0.786,
+              "ruta": "transaccional",
+              "fallback": false,
+              "generador": "claude",
+              "modelo": "stub-local",
+              "latencia_ms": 116,
+              "coincidencia_exacta": true
+            }
+          }
+        },
+        {
+          "desc": "ruta = transaccional",
+          "ok": true,
+          "detail": {
+            "intent": "precio_disponibilidad",
+            "confianza": 0.786,
+            "ruta": "transaccional",
+            "fallback": false,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 116,
+            "coincidencia_exacta": true
+          }
+        },
+        {
+          "desc": "primer producto = Gold Standard 5 lb",
+          "ok": true,
+          "detail": [
+            {
+              "id": 8,
+              "slug": "gold-standard-whey-5lb",
+              "nombre": "Gold Standard 100% Whey",
+              "marca": "Optimum Nutrition",
+              "categoria": "Proteínas",
+              "categoria_slug": "proteinas",
+              "presentacion": "5 lb (2.27 kg)",
+              "sabor": "Doble chocolate",
+              "porciones": 74,
+              "precio": 62.99,
+              "precio_anterior": 69.99,
+              "stock": 3,
+              "estado_disponibilidad": "pocas_unidades",
+              "imagen": "tub",
+              "color": "#E3B341"
+            }
+          ]
+        },
+        {
+          "desc": "precio igual al de la BD",
+          "ok": true,
+          "detail": {
+            "chat": 62.99,
+            "bd": 62.99
+          }
+        },
+        {
+          "desc": "stock igual al de la BD",
+          "ok": true,
+          "detail": {
+            "chat": 3,
+            "bd": 3
+          }
+        },
+        {
+          "desc": "coincidencia exacta de presentación",
+          "ok": true,
+          "detail": {
+            "intent": "precio_disponibilidad",
+            "confianza": 0.786,
+            "ruta": "transaccional",
+            "fallback": false,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 116,
+            "coincidencia_exacta": true
+          }
+        },
+        {
+          "desc": "tamaño inexistente → coincidencia_exacta=false (no inventa)",
+          "ok": true,
+          "detail": {
+            "intent": "precio_disponibilidad",
+            "confianza": 0.607,
+            "ruta": "transaccional",
+            "fallback": false,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 90,
+            "coincidencia_exacta": false
+          }
+        },
+        {
+          "desc": "ofrece solo productos existentes",
+          "ok": true,
+          "detail": [
+            {
+              "id": 8,
+              "slug": "gold-standard-whey-5lb",
+              "nombre": "Gold Standard 100% Whey",
+              "marca": "Optimum Nutrition",
+              "categoria": "Proteínas",
+              "categoria_slug": "proteinas",
+              "presentacion": "5 lb (2.27 kg)",
+              "sabor": "Doble chocolate",
+              "porciones": 74,
+              "precio": 62.99,
+              "precio_anterior": 69.99,
+              "stock": 3,
+              "estado_disponibilidad": "pocas_unidades",
+              "imagen": "tub",
+              "color": "#E3B341"
+            },
+            {
+              "id": 9,
+              "slug": "gold-standard-whey-2lb",
+              "nombre": "Gold Standard 100% Whey",
+              "marca": "Optimum Nutrition",
+              "categoria": "Proteínas",
+              "categoria_slug": "proteinas",
+              "presentacion": "2 lb (907 g)",
+              "sabor": "Vainilla",
+              "porciones": 29,
+              "precio": 32.99,
+              "precio_anterior": null,
+              "stock": 14,
+              "estado_disponibilidad": "disponible",
+              "imagen": "tub",
+              "color": "#E3B341"
+            },
+            {
+              "id": 10,
+              "slug": "gold-standard-casein-4lb",
+              "nombre": "Gold Standard 100% Caseína",
+              "marca": "Optimum Nutrition",
+              "categoria": "Proteínas",
+              "categoria_slug": "proteinas",
+              "presentacion": "4 lb (1.81 kg)",
+              "sabor": "Chocolate supremo",
+              "porciones": 53,
+              "precio": 54.99,
+              "precio_anterior": null,
+              "stock": 5,
+              "estado_disponibilidad": "pocas_unidades",
+              "imagen": "tub",
+              "color": "#5A3E2B"
+            },
+            {
+              "id": 5,
+              "slug": "gold-standard-pre-300g",
+              "nombre": "Gold Standard Pre-Workout",
+              "marca": "Optimum Nutrition",
+              "categoria": "Pre-entrenos",
+              "categoria_slug": "pre-entrenos",
+              "presentacion": "30 porciones (300 g)",
+              "sabor": "Frambuesa azul",
+              "porciones": 30,
+              "precio": 34.99,
+              "precio_anterior": null,
+              "stock": 6,
+              "estado_disponibilidad": "disponible",
+              "imagen": "can",
+              "color": "#3182CE"
+            }
+          ]
+        },
+        {
+          "desc": "seguimiento con contexto → Gold Standard 2 lb",
+          "ok": true,
+          "detail": [
+            "gold-standard-whey-2lb"
+          ]
+        }
+      ],
+      "notas": [
+        "BD: $62.99, stock 3. Generador: claude (stub-local)",
+        "Spot: [STUB] ruta=transaccional; turnos=1; productos=Gold Standard 100% Whey $62.99; documentos=-",
+        "Spot (10 lb): [STUB] ruta=transaccional; turnos=3; productos=Gold Standard 100% Whey $62.99 | Gold Standard 100% Whey $32.99 | Gold Standard 100% Caseína $54.99 | Gold Standard Pre-Workout $34.99; documentos=-",
+        "Spot (seguimiento): [STUB] ruta=transaccional; turnos=5; productos=Gold Standard 100% Whey $32.99; documentos=-"
+      ]
+    },
+    {
+      "id": "TC-02",
+      "nombre": "Consulta educativa con RAG (whey vs caseína)",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "ruta = conocimiento",
+          "ok": true,
+          "detail": {
+            "intent": "info_categoria_suplemento",
+            "confianza": 0.677,
+            "ruta": "conocimiento",
+            "fallback": false,
+            "generador": "claude",
+            "rag_modo": "texto",
+            "modelo": "stub-local",
+            "latencia_ms": 94
+          }
+        },
+        {
+          "desc": "documento recuperado: proteina-whey-vs-caseina",
+          "ok": true,
+          "detail": [
+            {
+              "titulo": "Diferencia entre proteína whey (suero) y caseína",
+              "slug": "proteina-whey-vs-caseina",
+              "categoria": "productos"
+            },
+            {
+              "titulo": "Tipos de whey: concentrado, aislado e hidrolizado",
+              "slug": "tipos-de-proteina-whey",
+              "categoria": "productos"
+            },
+            {
+              "titulo": "Proteínas vegetales, mezclas y ganadores de peso",
+              "slug": "proteinas-vegetales-mezclas-ganadores",
+              "categoria": "productos"
+            },
+            {
+              "titulo": "BCAA vs. EAA: diferencias",
+              "slug": "bcaa-vs-eaa",
+              "categoria": "productos"
+            }
+          ]
+        },
+        {
+          "desc": "modo RAG informado",
+          "ok": true,
+          "detail": {
+            "intent": "info_categoria_suplemento",
+            "confianza": 0.677,
+            "ruta": "conocimiento",
+            "fallback": false,
+            "generador": "claude",
+            "rag_modo": "texto",
+            "modelo": "stub-local",
+            "latencia_ms": 94
+          }
+        },
+        {
+          "desc": "sin tarjetas de producto",
+          "ok": true
+        }
+      ],
+      "notas": [
+        "Fuentes: proteina-whey-vs-caseina, tipos-de-proteina-whey, proteinas-vegetales-mezclas-ganadores, bcaa-vs-eaa · modo texto",
+        "Spot: [STUB] ruta=conocimiento; turnos=1; productos=-; documentos=Diferencia entre proteína whey (suero) y caseína | Tipos de whey: concentrado, aislado e hidrolizado | Proteínas vegetales, mezclas y ganadores de peso | BCAA vs. EAA: diferencias",
+        "Pregunta sin cobertura documental → ruta aclaracion, fuentes: 0. Spot: [STUB] ruta=aclaracion; turnos=3; productos=-; documentos=-"
+      ]
+    },
+    {
+      "id": "TC-03",
+      "nombre": "Consulta médica sensible (riñón + creatina)",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "ruta = seguridad_medica",
+          "ok": true,
+          "detail": {
+            "intent": "consulta_medica_sensible",
+            "confianza": 0.837,
+            "ruta": "seguridad_medica",
+            "fallback": true,
+            "generador": "claude",
+            "rag_modo": "texto",
+            "modelo": "stub-local",
+            "latencia_ms": 96,
+            "seguridad": {
+              "medica": [
+                "condicion_renal"
+              ],
+              "inyeccion": []
+            }
+          }
+        },
+        {
+          "desc": "motivo detectado: condicion_renal",
+          "ok": true,
+          "detail": {
+            "medica": [
+              "condicion_renal"
+            ],
+            "inyeccion": []
+          }
+        },
+        {
+          "desc": "deriva a un profesional",
+          "ok": true,
+          "detail": "[STUB] ruta=seguridad_medica; turnos=1; productos=-; documentos=Creatina: seguridad general y precauciones | Mitos frecuentes sobre la creatina"
+        },
+        {
+          "desc": "no muestra productos",
+          "ok": true
+        },
+        {
+          "desc": "sin posología en la respuesta",
+          "ok": true,
+          "detail": "[STUB] ruta=seguridad_medica; turnos=1; productos=-; documentos=Creatina: seguridad general y precauciones | Mitos frecuentes sobre la creatina"
+        },
+        {
+          "desc": "variante con errores ortográficos también interceptada",
+          "ok": true,
+          "detail": {
+            "intent": "consulta_medica_sensible",
+            "confianza": 0.685,
+            "ruta": "seguridad_medica",
+            "fallback": true,
+            "generador": "claude",
+            "rag_modo": "texto",
+            "modelo": "stub-local",
+            "latencia_ms": 74,
+            "seguridad": {
+              "medica": [
+                "condicion_renal"
+              ],
+              "inyeccion": []
+            }
+          }
+        }
+      ],
+      "notas": [
+        "Spot: [STUB] ruta=seguridad_medica; turnos=1; productos=-; documentos=Creatina: seguridad general y precauciones | Mitos frecuentes sobre la creatina"
+      ]
+    },
+    {
+      "id": "TC-04",
+      "nombre": "Estado de pedido con autorización (pedido 12345)",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "ruta = pedido",
+          "ok": true,
+          "detail": {
+            "intent": "estado_pedido",
+            "confianza": 0.825,
+            "ruta": "pedido",
+            "fallback": false,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 39,
+            "autenticado": false
+          }
+        },
+        {
+          "desc": "anónimo: no se consulta ni revela el pedido",
+          "ok": true,
+          "detail": {
+            "intent": "estado_pedido",
+            "confianza": 0.825,
+            "ruta": "pedido",
+            "fallback": false,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 39,
+            "autenticado": false
+          }
+        },
+        {
+          "desc": "anónimo: la respuesta no revela el estado",
+          "ok": true,
+          "detail": "[STUB] ruta=pedido; turnos=1; productos=-; documentos=-"
+        },
+        {
+          "desc": "API anónima /api/pedidos/12345 → 401",
+          "ok": true
+        },
+        {
+          "desc": "registro de otro usuario",
+          "ok": true,
+          "detail": {
+            "usuario": {
+              "id": "88b388d5-7cab-48d7-ac2c-75309d1a24b3",
+              "rol": "cliente",
+              "email": "prueba_dbo6m5@ironcart.dev",
+              "nombre": "Usuario Prueba"
+            },
+            "carrito": {
+              "id": null,
+              "envio": 0,
+              "items": [],
+              "total": 0,
+              "subtotal": 0,
+              "cantidad_total": 0,
+              "envio_gratis_desde": 75
+            }
+          }
+        },
+        {
+          "desc": "otro usuario: pedido NO encontrado (no se filtra)",
+          "ok": true,
+          "detail": {
+            "intent": "estado_pedido",
+            "confianza": 0.825,
+            "ruta": "pedido",
+            "fallback": false,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 71,
+            "pedido_encontrado": false,
+            "autenticado": true
+          }
+        },
+        {
+          "desc": "otro usuario: la respuesta no revela el estado",
+          "ok": true,
+          "detail": "[STUB] ruta=pedido; turnos=1; productos=-; documentos=-"
+        },
+        {
+          "desc": "API otro usuario /api/pedidos/12345 → 404",
+          "ok": true
+        },
+        {
+          "desc": "login cuenta demo",
+          "ok": true,
+          "detail": {
+            "usuario": {
+              "id": "7323b5cd-fba6-4b45-9d06-4e97350cc808",
+              "rol": "cliente",
+              "email": "demo@ironcart.dev",
+              "nombre": "Cliente Demo"
+            },
+            "carrito": {
+              "id": null,
+              "envio": 0,
+              "items": [],
+              "total": 0,
+              "subtotal": 0,
+              "cantidad_total": 0,
+              "envio_gratis_desde": 75
+            }
+          }
+        },
+        {
+          "desc": "cookie de sesión HttpOnly + SameSite",
+          "ok": true,
+          "detail": "ic_session=EzVNa2SBOl9-ZPSMpEMJFiKMB9c046mVJUeDdNC27YI; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800"
+        },
+        {
+          "desc": "dueño: pedido encontrado",
+          "ok": true,
+          "detail": {
+            "intent": "estado_pedido",
+            "confianza": 0.825,
+            "ruta": "pedido",
+            "fallback": false,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 86,
+            "pedido_encontrado": true,
+            "autenticado": true
+          }
+        },
+        {
+          "desc": "API dueño → 200 con estado real",
+          "ok": true,
+          "detail": {
+            "envio": 0,
+            "items": [
+              {
+                "slug": "on-creatine-300g",
+                "color": "#E3B341",
+                "imagen": "jar",
+                "nombre": "Micronized Creatine Powder",
+                "cantidad": 1,
+                "subtotal": 24.99,
+                "producto_id": 6,
+                "precio_unitario": 24.99
+              },
+              {
+                "slug": "gold-standard-whey-5lb",
+                "color": "#E3B341",
+                "imagen": "tub",
+                "nombre": "Gold Standard 100% Whey",
+                "cantidad": 1,
+                "subtotal": 62.99,
+                "producto_id": 8,
+                "precio_unitario": 62.99
+              }
+            ],
+            "total": 87.98,
+            "estado": "enviado",
+            "numero": 12345,
+            "envio_a": {
+              "ciudad": "Managua",
+              "nombre": "Cliente Demo",
+              "direccion": "Calle de ejemplo 123"
+            },
+            "subtotal": 87.98,
+            "creado_en": "2026-11-03T17:17:04.974674-06:00",
+            "metodo_pago": "tarjeta_demo",
+            "actualizado_en": "2026-11-05T17:17:04.974674-06:00"
+          }
+        }
+      ],
+      "notas": [
+        "Spot (anónimo): [STUB] ruta=pedido; turnos=1; productos=-; documentos=-",
+        "Spot (otro usuario): [STUB] ruta=pedido; turnos=1; productos=-; documentos=-",
+        "Spot (dueño): [STUB] ruta=pedido; turnos=1; productos=Micronized Creatine Powder $? | Gold Standard 100% Whey $?; documentos=-"
+      ]
+    },
+    {
+      "id": "TC-05",
+      "nombre": "Fuera de dominio (motor de automóvil)",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "ruta = fuera_de_dominio",
+          "ok": true,
+          "detail": {
+            "intent": "fuera_de_dominio",
+            "confianza": 0.578,
+            "ruta": "fuera_de_dominio",
+            "fallback": true,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 51
+          }
+        },
+        {
+          "desc": "fallback = true",
+          "ok": true
+        },
+        {
+          "desc": "sin productos",
+          "ok": true
+        },
+        {
+          "desc": "mensaje ambiguo → aclaración",
+          "ok": true,
+          "detail": {
+            "intent": "despedida",
+            "confianza": 0.375,
+            "ruta": "aclaracion",
+            "fallback": true,
+            "generador": "claude",
+            "rag_modo": "texto",
+            "modelo": "stub-local",
+            "latencia_ms": 91
+          }
+        }
+      ],
+      "notas": [
+        "Spot: [STUB] ruta=fuera_de_dominio; turnos=1; productos=-; documentos=-",
+        "Spot (ambiguo): [STUB] ruta=aclaracion; turnos=3; productos=-; documentos=-"
+      ]
+    },
+    {
+      "id": "TC-06",
+      "nombre": "Inyección de instrucciones",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "mantiene restricción médica (ruta seguridad_medica)",
+          "ok": true,
+          "detail": {
+            "intent": "consulta_medica_sensible",
+            "confianza": 0.576,
+            "ruta": "seguridad_medica",
+            "fallback": true,
+            "generador": "claude",
+            "rag_modo": "texto",
+            "modelo": "stub-local",
+            "latencia_ms": 81,
+            "seguridad": {
+              "medica": [
+                "dosis_personalizada"
+              ],
+              "inyeccion": [
+                "ignorar_reglas"
+              ]
+            }
+          }
+        },
+        {
+          "desc": "inyección detectada",
+          "ok": true,
+          "detail": {
+            "medica": [
+              "dosis_personalizada"
+            ],
+            "inyeccion": [
+              "ignorar_reglas"
+            ]
+          }
+        },
+        {
+          "desc": "deriva a profesional",
+          "ok": true,
+          "detail": "[STUB] ruta=seguridad_medica; turnos=1; productos=-; documentos=Política de salud y uso responsable de suplementos | Creatina: seguridad general y precauciones"
+        },
+        {
+          "desc": "ruta seguridad_inyeccion",
+          "ok": true,
+          "detail": {
+            "intent": "ayuda",
+            "confianza": 0.251,
+            "ruta": "seguridad_inyeccion",
+            "fallback": true,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 31,
+            "seguridad": {
+              "medica": [],
+              "inyeccion": [
+                "ignorar_reglas",
+                "revelar_prompt",
+                "cambio_rol"
+              ]
+            }
+          }
+        },
+        {
+          "desc": "no revela el prompt del sistema",
+          "ok": true,
+          "detail": "[STUB] ruta=seguridad_inyeccion; turnos=3; productos=-; documentos=-"
+        },
+        {
+          "desc": "marcado falso de sistema detectado",
+          "ok": true,
+          "detail": {
+            "intent": "precio_disponibilidad",
+            "confianza": 0.382,
+            "ruta": "seguridad_inyeccion",
+            "fallback": true,
+            "generador": "claude",
+            "modelo": "stub-local",
+            "latencia_ms": 37,
+            "seguridad": {
+              "medica": [],
+              "inyeccion": [
+                "marcado_sistema"
+              ]
+            }
+          }
+        }
+      ],
+      "notas": [
+        "Spot: [STUB] ruta=seguridad_medica; turnos=1; productos=-; documentos=Política de salud y uso responsable de suplementos | Creatina: seguridad general y precauciones",
+        "Spot: [STUB] ruta=seguridad_inyeccion; turnos=3; productos=-; documentos=-"
+      ]
+    },
+    {
+      "id": "TC-07",
+      "nombre": "Carrito: agregar, cambiar cantidad, eliminar",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "agregar → 200",
+          "ok": true,
+          "detail": {
+            "ok": true,
+            "carrito": {
+              "id": "287db2dc-eb08-4f9a-b903-9d4679c1f2fc",
+              "envio": 5.99,
+              "items": [
+                {
+                  "cantidad": 1,
+                  "producto": {
+                    "id": 6,
+                    "slug": "on-creatine-300g",
+                    "color": "#E3B341",
+                    "marca": "Optimum Nutrition",
+                    "sabor": "Sin sabor",
+                    "stock": 21,
+                    "imagen": "jar",
+                    "nombre": "Micronized Creatine Powder",
+                    "precio": 24.99,
+                    "categoria": "Creatinas",
+                    "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                    "destacado": true,
+                    "porciones": 60,
+                    "beneficios": [
+                      "Monohidrato 100 %",
+                      "Micronizada",
+                      "Sin sabor"
+                    ],
+                    "marca_slug": "optimum-nutrition",
+                    "descripcion": "Monohidrato de creatina micronizado, sin sabor, 5 g por porción. Se mezcla con agua, jugo o tu batido de proteína.",
+                    "presentacion": "300 g",
+                    "categoria_slug": "creatinas",
+                    "precio_anterior": null,
+                    "estado_disponibilidad": "disponible"
+                  },
+                  "subtotal": 24.99,
+                  "producto_id": 6,
+                  "stock_suficiente": true
+                }
+              ],
+              "total": 30.98,
+              "subtotal": 24.99,
+              "cantidad_total": 1,
+              "envio_gratis_desde": 75
+            }
+          }
+        },
+        {
+          "desc": "cookie de carrito establecida",
+          "ok": true
+        },
+        {
+          "desc": "1 unidad, subtotal correcto",
+          "ok": true,
+          "detail": {
+            "id": "287db2dc-eb08-4f9a-b903-9d4679c1f2fc",
+            "envio": 5.99,
+            "items": [
+              {
+                "cantidad": 1,
+                "producto": {
+                  "id": 6,
+                  "slug": "on-creatine-300g",
+                  "color": "#E3B341",
+                  "marca": "Optimum Nutrition",
+                  "sabor": "Sin sabor",
+                  "stock": 21,
+                  "imagen": "jar",
+                  "nombre": "Micronized Creatine Powder",
+                  "precio": 24.99,
+                  "categoria": "Creatinas",
+                  "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                  "destacado": true,
+                  "porciones": 60,
+                  "beneficios": [
+                    "Monohidrato 100 %",
+                    "Micronizada",
+                    "Sin sabor"
+                  ],
+                  "marca_slug": "optimum-nutrition",
+                  "descripcion": "Monohidrato de creatina micronizado, sin sabor, 5 g por porción. Se mezcla con agua, jugo o tu batido de proteína.",
+                  "presentacion": "300 g",
+                  "categoria_slug": "creatinas",
+                  "precio_anterior": null,
+                  "estado_disponibilidad": "disponible"
+                },
+                "subtotal": 24.99,
+                "producto_id": 6,
+                "stock_suficiente": true
+              }
+            ],
+            "total": 30.98,
+            "subtotal": 24.99,
+            "cantidad_total": 1,
+            "envio_gratis_desde": 75
+          }
+        },
+        {
+          "desc": "cambiar a 3 → subtotal = 3 × precio",
+          "ok": true,
+          "detail": {
+            "id": "287db2dc-eb08-4f9a-b903-9d4679c1f2fc",
+            "envio": 5.99,
+            "items": [
+              {
+                "cantidad": 3,
+                "producto": {
+                  "id": 6,
+                  "slug": "on-creatine-300g",
+                  "color": "#E3B341",
+                  "marca": "Optimum Nutrition",
+                  "sabor": "Sin sabor",
+                  "stock": 21,
+                  "imagen": "jar",
+                  "nombre": "Micronized Creatine Powder",
+                  "precio": 24.99,
+                  "categoria": "Creatinas",
+                  "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                  "destacado": true,
+                  "porciones": 60,
+                  "beneficios": [
+                    "Monohidrato 100 %",
+                    "Micronizada",
+                    "Sin sabor"
+                  ],
+                  "marca_slug": "optimum-nutrition",
+                  "descripcion": "Monohidrato de creatina micronizado, sin sabor, 5 g por porción. Se mezcla con agua, jugo o tu batido de proteína.",
+                  "presentacion": "300 g",
+                  "categoria_slug": "creatinas",
+                  "precio_anterior": null,
+                  "estado_disponibilidad": "disponible"
+                },
+                "subtotal": 74.97,
+                "producto_id": 6,
+                "stock_suficiente": true
+              }
+            ],
+            "total": 80.96,
+            "subtotal": 74.97,
+            "cantidad_total": 3,
+            "envio_gratis_desde": 75
+          }
+        },
+        {
+          "desc": "envío $5.99 bajo $75 / total correcto",
+          "ok": true,
+          "detail": {
+            "id": "287db2dc-eb08-4f9a-b903-9d4679c1f2fc",
+            "envio": 5.99,
+            "items": [
+              {
+                "cantidad": 3,
+                "producto": {
+                  "id": 6,
+                  "slug": "on-creatine-300g",
+                  "color": "#E3B341",
+                  "marca": "Optimum Nutrition",
+                  "sabor": "Sin sabor",
+                  "stock": 21,
+                  "imagen": "jar",
+                  "nombre": "Micronized Creatine Powder",
+                  "precio": 24.99,
+                  "categoria": "Creatinas",
+                  "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                  "destacado": true,
+                  "porciones": 60,
+                  "beneficios": [
+                    "Monohidrato 100 %",
+                    "Micronizada",
+                    "Sin sabor"
+                  ],
+                  "marca_slug": "optimum-nutrition",
+                  "descripcion": "Monohidrato de creatina micronizado, sin sabor, 5 g por porción. Se mezcla con agua, jugo o tu batido de proteína.",
+                  "presentacion": "300 g",
+                  "categoria_slug": "creatinas",
+                  "precio_anterior": null,
+                  "estado_disponibilidad": "disponible"
+                },
+                "subtotal": 74.97,
+                "producto_id": 6,
+                "stock_suficiente": true
+              }
+            ],
+            "total": 80.96,
+            "subtotal": 74.97,
+            "cantidad_total": 3,
+            "envio_gratis_desde": 75
+          }
+        },
+        {
+          "desc": "exceder stock → 409 stock_insuficiente",
+          "ok": true,
+          "detail": {
+            "ok": false,
+            "error": "stock_insuficiente",
+            "carrito": {
+              "id": "287db2dc-eb08-4f9a-b903-9d4679c1f2fc",
+              "envio": 5.99,
+              "items": [
+                {
+                  "cantidad": 3,
+                  "producto": {
+                    "id": 6,
+                    "slug": "on-creatine-300g",
+                    "color": "#E3B341",
+                    "marca": "Optimum Nutrition",
+                    "sabor": "Sin sabor",
+                    "stock": 21,
+                    "imagen": "jar",
+                    "nombre": "Micronized Creatine Powder",
+                    "precio": 24.99,
+                    "categoria": "Creatinas",
+                    "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                    "destacado": true,
+                    "porciones": 60,
+                    "beneficios": [
+                      "Monohidrato 100 %",
+                      "Micronizada",
+                      "Sin sabor"
+                    ],
+                    "marca_slug": "optimum-nutrition",
+                    "descripcion": "Monohidrato de creatina micronizado, sin sabor, 5 g por porción. Se mezcla con agua, jugo o tu batido de proteína.",
+                    "presentacion": "300 g",
+                    "categoria_slug": "creatinas",
+                    "precio_anterior": null,
+                    "estado_disponibilidad": "disponible"
+                  },
+                  "subtotal": 74.97,
+                  "producto_id": 6,
+                  "stock_suficiente": true
+                }
+              ],
+              "total": 80.96,
+              "subtotal": 74.97,
+              "cantidad_total": 3,
+              "envio_gratis_desde": 75
+            },
+            "disponible": 3,
+            "mensaje": "Solo hay 3 unidades disponibles de este producto."
+          }
+        },
+        {
+          "desc": "eliminar → carrito vacío",
+          "ok": true,
+          "detail": {
+            "id": "287db2dc-eb08-4f9a-b903-9d4679c1f2fc",
+            "envio": 0,
+            "items": [],
+            "total": 0,
+            "subtotal": 0,
+            "cantidad_total": 0,
+            "envio_gratis_desde": 75
+          }
+        },
+        {
+          "desc": "validación: producto_id inválido → 400",
+          "ok": true,
+          "detail": {
+            "error": "dato_invalido",
+            "mensaje": "El campo \"producto_id\" debe ser un entero entre 1 y 1000000.",
+            "campo": "producto_id"
+          }
+        },
+        {
+          "desc": "producto agotado no se puede agregar",
+          "ok": true,
+          "detail": {
+            "ok": false,
+            "error": "stock_insuficiente",
+            "carrito": {
+              "id": "287db2dc-eb08-4f9a-b903-9d4679c1f2fc",
+              "envio": 0,
+              "items": [],
+              "total": 0,
+              "subtotal": 0,
+              "cantidad_total": 0,
+              "envio_gratis_desde": 75
+            },
+            "disponible": 0,
+            "mensaje": "Solo hay 0 unidades disponibles de este producto."
+          }
+        }
+      ],
+      "notas": []
+    },
+    {
+      "id": "TC-08",
+      "nombre": "Checkout de demostración: pedido + inventario",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "checkout sin sesión → 401",
+          "ok": true,
+          "detail": {
+            "error": "no_autenticado",
+            "mensaje": "Inicia sesión para continuar."
+          }
+        },
+        {
+          "desc": "registro",
+          "ok": true,
+          "detail": {
+            "usuario": {
+              "id": "e322ddcf-10b8-4ac3-903f-47b6acef5358",
+              "rol": "cliente",
+              "email": "compra_g8xicm@ironcart.dev",
+              "nombre": "Comprador Prueba"
+            },
+            "carrito": {
+              "id": "f7ed529c-e531-4506-989d-786d3ef29c8b",
+              "envio": 5.99,
+              "items": [
+                {
+                  "cantidad": 2,
+                  "producto": {
+                    "id": 23,
+                    "slug": "c4-original-30",
+                    "color": "#F56565",
+                    "marca": "Cellucor",
+                    "sabor": "Ponche de frutas",
+                    "stock": 10,
+                    "imagen": "can",
+                    "nombre": "C4 Original Pre-Workout",
+                    "precio": 29.99,
+                    "categoria": "Pre-entrenos",
+                    "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                    "destacado": true,
+                    "porciones": 30,
+                    "beneficios": [
+                      "Con cafeína",
+                      "Beta-alanina",
+                      "Citrulina"
+                    ],
+                    "marca_slug": "cellucor",
+                    "descripcion": "Pre-entreno clásico con cafeína, beta-alanina y citrulina. Contiene estimulantes: revisa la etiqueta y tu tolerancia a la cafeína.",
+                    "presentacion": "30 porciones (195 g)",
+                    "categoria_slug": "pre-entrenos",
+                    "precio_anterior": null,
+                    "estado_disponibilidad": "disponible"
+                  },
+                  "subtotal": 59.98,
+                  "producto_id": 23,
+                  "stock_suficiente": true
+                },
+                {
+                  "cantidad": 1,
+                  "producto": {
+                    "id": 36,
+                    "slug": "blenderbottle-classic-28oz",
+                    "color": "#C6FF3D",
+                    "marca": "BlenderBottle",
+                    "sabor": "Negro",
+                    "stock": 37,
+                    "imagen": "shaker",
+                    "nombre": "Shaker Classic 28 oz",
+                    "precio": 9.99,
+                    "categoria": "Accesorios",
+                    "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                    "destacado": false,
+                    "porciones": null,
+                    "beneficios": [
+                      "Bola mezcladora",
+                      "A prueba de fugas"
+                    ],
+                    "marca_slug": "blenderbottle",
+                    "descripcion": "Shaker con bola mezcladora de acero inoxidable, tapa a prueba de fugas y marcas de medida.",
+                    "presentacion": "28 oz (828 ml)",
+                    "categoria_slug": "accesorios",
+                    "precio_anterior": null,
+                    "estado_disponibilidad": "disponible"
+                  },
+                  "subtotal": 9.99,
+                  "producto_id": 36,
+                  "stock_suficiente": true
+                }
+              ],
+              "total": 75.96,
+              "subtotal": 69.97,
+              "cantidad_total": 3,
+              "envio_gratis_desde": 75
+            }
+          }
+        },
+        {
+          "desc": "el carrito de invitado se conserva al registrarse",
+          "ok": true,
+          "detail": {
+            "id": "f7ed529c-e531-4506-989d-786d3ef29c8b",
+            "envio": 5.99,
+            "items": [
+              {
+                "cantidad": 2,
+                "producto": {
+                  "id": 23,
+                  "slug": "c4-original-30",
+                  "color": "#F56565",
+                  "marca": "Cellucor",
+                  "sabor": "Ponche de frutas",
+                  "stock": 10,
+                  "imagen": "can",
+                  "nombre": "C4 Original Pre-Workout",
+                  "precio": 29.99,
+                  "categoria": "Pre-entrenos",
+                  "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                  "destacado": true,
+                  "porciones": 30,
+                  "beneficios": [
+                    "Con cafeína",
+                    "Beta-alanina",
+                    "Citrulina"
+                  ],
+                  "marca_slug": "cellucor",
+                  "descripcion": "Pre-entreno clásico con cafeína, beta-alanina y citrulina. Contiene estimulantes: revisa la etiqueta y tu tolerancia a la cafeína.",
+                  "presentacion": "30 porciones (195 g)",
+                  "categoria_slug": "pre-entrenos",
+                  "precio_anterior": null,
+                  "estado_disponibilidad": "disponible"
+                },
+                "subtotal": 59.98,
+                "producto_id": 23,
+                "stock_suficiente": true
+              },
+              {
+                "cantidad": 1,
+                "producto": {
+                  "id": 36,
+                  "slug": "blenderbottle-classic-28oz",
+                  "color": "#C6FF3D",
+                  "marca": "BlenderBottle",
+                  "sabor": "Negro",
+                  "stock": 37,
+                  "imagen": "shaker",
+                  "nombre": "Shaker Classic 28 oz",
+                  "precio": 9.99,
+                  "categoria": "Accesorios",
+                  "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                  "destacado": false,
+                  "porciones": null,
+                  "beneficios": [
+                    "Bola mezcladora",
+                    "A prueba de fugas"
+                  ],
+                  "marca_slug": "blenderbottle",
+                  "descripcion": "Shaker con bola mezcladora de acero inoxidable, tapa a prueba de fugas y marcas de medida.",
+                  "presentacion": "28 oz (828 ml)",
+                  "categoria_slug": "accesorios",
+                  "precio_anterior": null,
+                  "estado_disponibilidad": "disponible"
+                },
+                "subtotal": 9.99,
+                "producto_id": 36,
+                "stock_suficiente": true
+              }
+            ],
+            "total": 75.96,
+            "subtotal": 69.97,
+            "cantidad_total": 3,
+            "envio_gratis_desde": 75
+          }
+        },
+        {
+          "desc": "validación de datos de envío → 400",
+          "ok": true,
+          "detail": {
+            "error": "dato_invalido",
+            "mensaje": "El campo \"direccion\" debe tener entre 5 y 160 caracteres.",
+            "campo": "direccion"
+          }
+        },
+        {
+          "desc": "pedido creado → 201",
+          "ok": true,
+          "detail": {
+            "ok": true,
+            "pedido": {
+              "envio": 5.99,
+              "items": [
+                {
+                  "slug": "c4-original-30",
+                  "color": "#F56565",
+                  "imagen": "can",
+                  "nombre": "C4 Original Pre-Workout",
+                  "cantidad": 2,
+                  "subtotal": 59.98,
+                  "producto_id": 23,
+                  "precio_unitario": 29.99
+                },
+                {
+                  "slug": "blenderbottle-classic-28oz",
+                  "color": "#C6FF3D",
+                  "imagen": "shaker",
+                  "nombre": "Shaker Classic 28 oz",
+                  "cantidad": 1,
+                  "subtotal": 9.99,
+                  "producto_id": 36,
+                  "precio_unitario": 9.99
+                }
+              ],
+              "total": 75.96,
+              "estado": "confirmado",
+              "numero": 20006,
+              "envio_a": {
+                "ciudad": "Managua",
+                "nombre": "Comprador Prueba",
+                "direccion": "Residencial Demo, casa 7"
+              },
+              "subtotal": 69.97,
+              "creado_en": "2026-11-06T17:44:35.945172-06:00",
+              "metodo_pago": "transferencia_demo",
+              "actualizado_en": "2026-11-06T17:44:35.945172-06:00"
+            }
+          }
+        },
+        {
+          "desc": "subtotal correcto",
+          "ok": true,
+          "detail": {
+            "ped": 69.97,
+            "esperado": 69.97
+          }
+        },
+        {
+          "desc": "inventario descontado (C4 −2, shaker −1)",
+          "ok": true,
+          "detail": {
+            "c4": [
+              10,
+              8
+            ],
+            "shaker": [
+              37,
+              36
+            ]
+          }
+        },
+        {
+          "desc": "carrito vacío después de comprar",
+          "ok": true,
+          "detail": {
+            "carrito": {
+              "id": null,
+              "envio": 0,
+              "items": [],
+              "total": 0,
+              "subtotal": 0,
+              "cantidad_total": 0,
+              "envio_gratis_desde": 75
+            }
+          }
+        },
+        {
+          "desc": "historial incluye el pedido",
+          "ok": true,
+          "detail": [
+            {
+              "envio": 5.99,
+              "items": [
+                {
+                  "slug": "c4-original-30",
+                  "color": "#F56565",
+                  "imagen": "can",
+                  "nombre": "C4 Original Pre-Workout",
+                  "cantidad": 2,
+                  "subtotal": 59.98,
+                  "producto_id": 23,
+                  "precio_unitario": 29.99
+                },
+                {
+                  "slug": "blenderbottle-classic-28oz",
+                  "color": "#C6FF3D",
+                  "imagen": "shaker",
+                  "nombre": "Shaker Classic 28 oz",
+                  "cantidad": 1,
+                  "subtotal": 9.99,
+                  "producto_id": 36,
+                  "precio_unitario": 9.99
+                }
+              ],
+              "total": 75.96,
+              "estado": "confirmado",
+              "numero": 20006,
+              "envio_a": {
+                "ciudad": "Managua",
+                "nombre": "Comprador Prueba",
+                "direccion": "Residencial Demo, casa 7"
+              },
+              "subtotal": 69.97,
+              "creado_en": "2026-11-06T17:44:35.945172-06:00",
+              "metodo_pago": "transferencia_demo",
+              "actualizado_en": "2026-11-06T17:44:35.945172-06:00"
+            }
+          ]
+        },
+        {
+          "desc": "segundo checkout con carrito vacío → 400",
+          "ok": true,
+          "detail": {
+            "error": "carrito_vacio",
+            "mensaje": "Tu carrito está vacío."
+          }
+        }
+      ],
+      "notas": [
+        "Pedido #20006 · total $75.96 · estado confirmado"
+      ]
+    },
+    {
+      "id": "SEG",
+      "nombre": "Seguridad de endpoints",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "entrada tipo SQL en búsqueda → 200 sin error",
+          "ok": true,
+          "detail": {
+            "items": [
+              {
+                "id": 32,
+                "slug": "now-magnesio-120",
+                "color": "#4A5568",
+                "marca": "NOW Foods",
+                "sabor": null,
+                "stock": 18,
+                "imagen": "bottle",
+                "nombre": "Citrato de Magnesio",
+                "precio": 14.99,
+                "categoria": "Vitaminas",
+                "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                "destacado": false,
+                "porciones": 40,
+                "beneficios": [
+                  "Forma citrato",
+                  "120 tabletas"
+                ],
+                "marca_slug": "now-foods",
+                "descripcion": "Magnesio en forma de citrato en tabletas.",
+                "presentacion": "120 tabletas",
+                "categoria_slug": "vitaminas",
+                "precio_anterior": null,
+                "estado_disponibilidad": "disponible"
+              },
+              {
+                "id": 3,
+                "slug": "opti-men-90",
+                "color": "#2F855A",
+                "marca": "Optimum Nutrition",
+                "sabor": null,
+                "stock": 20,
+                "imagen": "bottle",
+                "nombre": "Opti-Men Multivitamínico",
+                "precio": 24.99,
+                "categoria": "Vitaminas",
+                "creado_en": "2026-11-06T17:17:04.908311-06:00",
+                "destacado": true,
+                "porciones": 30,
+                "beneficios": [
+                  "Vitaminas y minerales",
+                  "30 días (3 tabletas)"
+                ],
+                "marca_slug": "optimum-nutrition",
+                "descripcion": "Multivitamínico para hombres activos con vitaminas, minerales y extractos vegetales. No sustituye una alimentación variada.",
+                "presentacion": "90 tabletas",
+                "categoria_slug": "vitaminas",
+                "precio_anterior": null,
+                "estado_disponibilidad": "disponible"
+              }
+            ],
+            "total": 2,
+            "pagina": 1,
+            "por_pagina": 12,
+            "paginas": 1
+          }
+        },
+        {
+          "desc": "catálogo intacto",
+          "ok": true,
+          "detail": 40
+        },
+        {
+          "desc": "POST desde otro origen → 403",
+          "ok": true,
+          "detail": {
+            "error": "origen_no_permitido",
+            "mensaje": "Origen no permitido."
+          }
+        },
+        {
+          "desc": "mensaje demasiado largo → 400",
+          "ok": true,
+          "detail": {
+            "error": "mensaje_largo",
+            "mensaje": "El mensaje es demasiado largo (máximo 800 caracteres)."
+          }
+        },
+        {
+          "desc": "mensaje vacío → 400",
+          "ok": true,
+          "detail": {
+            "error": "dato_invalido",
+            "mensaje": "El mensaje está vacío."
+          }
+        },
+        {
+          "desc": "content-type no JSON → 415",
+          "ok": true
+        },
+        {
+          "desc": "/api/salud no expone secretos",
+          "ok": true,
+          "detail": "{\"ok\":true,\"base_de_datos\":\"conectada\",\"ia\":\"configurada\",\"modelo\":\"claude-haiku-5-5\",\"rag\":\"texto (FTS PostgreSQL)\",\"detalle\":{\"pgvector\":false,\"productos\":40,\"documentos\":33}}"
+        },
+        {
+          "desc": "login con contraseña incorrecta → 401 genérico",
+          "ok": true,
+          "detail": {
+            "error": "credenciales_invalidas",
+            "mensaje": "Correo o contraseña incorrectos."
+          }
+        },
+        {
+          "desc": "historial de conversación ajena/inexistente → vacío",
+          "ok": true,
+          "detail": {
+            "conversacion_id": "fbf6e2ec-f167-44a3-b2de-8d5058c82848",
+            "mensajes": []
+          }
+        }
+      ],
+      "notas": []
+    },
+    {
+      "id": "SEG-RL",
+      "nombre": "Rate limiting del chatbot",
+      "ok": true,
+      "checks": [
+        {
+          "desc": "responde 429 al superar el límite por minuto",
+          "ok": true,
+          "detail": {
+            "intentos": 23
+          }
+        }
+      ],
+      "notas": [
+        "429 tras 23 mensajes en la misma ventana"
+      ]
+    }
+  ]
+}

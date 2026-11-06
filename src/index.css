@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/*
+  IRONCART · sistema visual
+  Hierro (fondo) · Carbón y Grafito (superficies) · Hueso (texto)
+  Naranja eléctrico = marca y acciones · Lima = disponibilidad / "en línea" (solo semántico)
+  Motivo propio: el panel tipo "Supplement Facts" con reglas gruesas (ver .facts).
+*/
+@theme {
+  --color-hierro: #0d0e0f;
+  --color-carbon: #17191b;
+  --color-grafito: #24272b;
+  --color-acero: #3a3e44;
+  --color-niebla: #9aa0a8;
+  --color-hueso: #ece9e2;
+  --color-naranja: #ff5b14;
+  --color-naranja-osc: #d94508;
+  --color-lima: #c8f031;
+  --color-alerta: #ffb020;
+  --color-error: #ff6b6b;
+
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  --font-sans: "Barlow", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@layer base {
+  html { color-scheme: dark; -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-hierro text-hueso font-sans antialiased;
+    font-size: 1.0625rem;
+    line-height: 1.55;
+  }
+  h1, h2, h3 { @apply font-display; letter-spacing: -0.01em; line-height: 0.98; }
+  ::selection { background: var(--color-naranja); color: #000; }
+  :focus-visible { outline: 2px solid var(--color-lima); outline-offset: 2px; border-radius: 4px; }
+  input, textarea, select, button { font: inherit; }
+  img, svg { display: block; }
+}
+
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 font-display text-lg font-bold tracking-wide transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+@layer components {
+  .btn-primario { @apply btn bg-naranja text-black hover:bg-[#ff7a3d] active:bg-naranja-osc; }
+  .btn-secundario { @apply btn border border-acero text-hueso hover:border-hueso; }
+  .btn-fantasma { @apply btn px-3 text-niebla hover:text-hueso; }
+
+  .campo {
+    @apply w-full rounded-md border border-acero bg-carbon px-4 py-3 text-hueso placeholder:text-niebla/70 transition-colors focus:border-naranja focus:outline-none;
+  }
+  .etiqueta { @apply mb-1.5 block text-sm font-medium text-niebla; }
+
+  .contenedor { @apply mx-auto w-full max-w-7xl px-5 sm:px-8; }
+
+  /* Panel "Supplement Facts": reglas gruesas como en la etiqueta de un envase */
+  .facts { @apply rounded-sm border-2 border-hueso bg-hierro p-4 text-hueso; }
+  .facts-titulo { @apply font-display text-4xl font-extrabold leading-none; }
+  .facts-regla-gruesa { @apply my-2 h-2.5 bg-hueso; }
+  .facts-regla-media { @apply my-1.5 h-1 bg-hueso; }
+  .facts-fila { @apply flex items-baseline justify-between gap-4 border-b border-hueso/60 py-1.5; }
+
+  .chip-filtro {
+    @apply rounded-full border border-acero px-3.5 py-1.5 text-sm text-niebla transition-colors hover:border-hueso hover:text-hueso;
+  }
+  .chip-filtro[aria-pressed="true"] { @apply border-naranja bg-naranja text-black; }
+}
+
+@keyframes subir { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes punto { 0%, 80%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+@keyframes aparecer { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+.hero-entrada > * { animation: subir 0.7s var(--ease-out-quart) both; }
+.hero-entrada > *:nth-child(2) { animation-delay: 0.08s; }
+.hero-entrada > *:nth-child(3) { animation-delay: 0.16s; }
+.hero-entrada > *:nth-child(4) { animation-delay: 0.24s; }
+.escribiendo span { animation: punto 1.2s infinite; }
+.escribiendo span:nth-child(2) { animation-delay: 0.15s; }
+.escribiendo span:nth-child(3) { animation-delay: 0.3s; }
+.panel-spot { animation: aparecer 0.22s var(--ease-out-quart) both; transform-origin: bottom right; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
