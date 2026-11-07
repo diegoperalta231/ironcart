@@ -231,6 +231,24 @@ Ejecutados contra la API pública desde el sitio publicado, modelo `claude-haiku
 
 Latencia de extremo a extremo observada: 1,1 a 3,7 s por mensaje. **Defectos encontrados y corregidos en producción:** (1) en un seguimiento, Claude se retractaba de datos correctos del turno anterior que ya no estaban en el contexto → regla añadida al prompt (v1.3); (2) "¿cuál de las dos?" mostraba tarjetas de un producto distinto → las referencias plurales usan ahora los productos de las dos últimas respuestas.
 
+### Spot según el rol (7 nov 2026, producción, Claude real)
+
+- **Cliente o visitante:** puede llenar el carrito conversando ("agrega…", "mete 2 shakers", "quita…"). Spot busca el producto real, pregunta si hay varias opciones y usa las mismas funciones de carrito que la tienda (stock validado en BD).
+- **Administrador:** puede crear, editar (precio, stock, descripción, categoría, activo/destacado…), eliminar productos y cambiar el estado de pedidos pidiéndoselo a Spot. Spot **solo propone**: el cambio se aplica cuando el administrador pulsa *Confirmar* en la tarjeta (validez de 15 min, todo o nada) y queda en `auditoria_cambio` (pestaña *Historial* del panel). Un producto con pedidos se desactiva en lugar de borrarse.
+- **Control de permisos en el servidor:** las herramientas de administración solo se entregan a Claude si la sesión tiene rol `admin`; cada herramienta vuelve a verificar el rol y los endpoints de confirmación exigen admin (401/403).
+
+| Prueba | Resultado |
+|---|---|
+| Visitante: "Agrega una creatina de Optimum de 300 g a mi carrito" | Ruta carrito; agregó 1 × Micronized Creatine 300 g ($24.99) |
+| Cliente: "Mete 2 shakers" → "el classic" | Preguntó cuál de los dos; luego agregó 2 × Shaker Classic ($19.98) |
+| Cliente: "Cambia el precio de la creatina… a 19.99" | Ruta `sin_permiso`; precio sin cambios |
+| Cliente / anónimo llamando a `/admin/acciones/:id/confirmar` | 403 / 401; nada aplicado |
+| Admin: "Sube el stock… en 5 unidades" → Confirmar | Propuesta 25 → 30; aplicada solo tras confirmar; auditada |
+| Admin: crear producto nuevo + restaurar stock en una sola orden → Confirmar | Producto id 41 creado, stock vuelto a 25 |
+| Admin: cambiar precio 18.50 → 17.90 → "ahora elimínalo" → Confirmar | Ambos aplicados y auditados |
+
+Defecto encontrado y corregido: después de confirmar, Spot "corregía" su propuesta anterior al ver los valores ya actualizados → la nota que se guarda al confirmar ahora detalla lo aplicado y el prompt indica que esos cambios ya están hechos.
+
 ## 12. Despliegue en Netlify
 
 1. Sube el proyecto a un repositorio de GitHub (sin `.env`).
