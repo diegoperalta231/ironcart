@@ -351,7 +351,7 @@ on('POST', /^\/api\/admin\/acciones\/([0-9a-f-]{36})\/(confirmar|cancelar)$/, as
   if (op === 'cancelar') {
     const r = await rpc<{ ok: boolean }>('api_admin_cancelar_accion', { id, usuario_id: admin.id });
     if (!r.ok) throw new HttpError(409, 'no_pendiente', 'Esta propuesta ya no está pendiente.');
-    if (isUuid(b.conversacion_id)) await registrarEnChat(b.conversacion_id, admin, 'El administrador canceló los cambios propuestos. No se modificó nada.');
+    if (isUuid(b.conversacion_id)) await registrarEnChat(b.conversacion_id, admin, '[Nota del sistema] El administrador canceló los cambios propuestos. No se modificó nada.');
     return json({ ok: true, estado: 'cancelada' });
   }
   const r = await rpc<{ ok: boolean; error?: string; detalle?: string; resultado?: Array<Record<string, unknown>> }>('api_admin_confirmar_accion', { id, usuario_id: admin.id });
@@ -365,11 +365,28 @@ on('POST', /^\/api\/admin\/acciones\/([0-9a-f-]{36})\/(confirmar|cancelar)$/, as
     const [st, m] = msg[r.error ?? ''] ?? [400, 'No se pudo aplicar la propuesta.'];
     throw new HttpError(st, r.error ?? 'error', m, r.detalle ? { detalle: r.detalle } : undefined);
   }
-  if (isUuid(b.conversacion_id)) await registrarEnChat(b.conversacion_id, admin, `El administrador confirmó los cambios propuestos y se aplicaron (${r.resultado?.length ?? 0} operaciones).`);
+  if (isUuid(b.conversacion_id)) await registrarEnChat(b.conversacion_id, admin, notaAplicada(r.resultado ?? []));
   return json({ ok: true, estado: 'aplicada', resultado: r.resultado });
 });
 
 on('GET', /^\/api\/admin\/auditoria$/, async (req) => { await requireAdmin(req); return json(await rpc('api_admin_auditoria')); });
+
+/** Nota explícita de lo aplicado, para que Spot sepa en el siguiente turno que los cambios YA están hechos. */
+function notaAplicada(res: Array<Record<string, unknown>>): string {
+  const lineas = res.map((r) => {
+    const p = (r.producto ?? {}) as Record<string, unknown>;
+    const nom = typeof r.producto === 'string' ? r.producto : `${p.nombre ?? ''} (${p.presentacion ?? ''}, id ${p.id ?? '?'})`;
+    switch (r.tipo) {
+      case 'crear': return `- Creado: ${nom}, precio $${p.precio}, stock ${p.stock}.`;
+      case 'actualizar': return `- Actualizado: ${nom}; valores actuales: precio $${p.precio}, stock ${p.stock}, activo ${p.activo}.`;
+      case 'eliminar': return `- Eliminado definitivamente: ${nom}.`;
+      case 'desactivar': return `- Desactivado (tenía pedidos): ${nom}.`;
+      case 'estado_pedido': return `- Pedido #${r.numero} ahora en estado "${r.estado}".`;
+      default: return `- ${String(r.tipo)}`;
+    }
+  });
+  return `[Nota del sistema] El administrador pulsó "Confirmar" y estos cambios YA ESTÁN APLICADOS en la base de datos:\n${lineas.join('\n')}`;
+}
 
 /** Deja constancia en la conversación para que Spot tenga el contexto en el siguiente turno. */
 async function registrarEnChat(conversacionId: string, admin: Usuario, texto: string) {

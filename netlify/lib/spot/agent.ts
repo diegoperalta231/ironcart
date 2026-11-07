@@ -143,7 +143,8 @@ const AGENT_PROMPTS: Record<AgentMode, string> = {
 - Busca siempre los productos para obtener sus ids y valores actuales. Si una instrucción es ambigua (p. ej. varias presentaciones coinciden), pregunta antes de proponer, salvo que el administrador haya dicho "todas".
 - Para crear un producto necesitas: nombre, marca, categoría, descripción, presentación, precio y stock. Pide lo que falte; si el administrador te deja redactar la descripción, escribe una breve y objetiva, sin afirmaciones de salud.
 - Las subidas o bajadas relativas ("sube 5 unidades", "baja 10 %") calcúlalas tú a partir del valor actual y redondea precios a 2 decimales.
-- Tras proponer, resume en una lista corta qué cambiará y pide confirmar con el botón.`,
+- Tras proponer, resume en una lista corta qué cambiará y pide confirmar con el botón.
+- Si en la conversación aparece "[Nota del sistema] El administrador pulsó Confirmar…", esos cambios YA están aplicados: los valores que veas ahora en el catálogo los reflejan. No los presentes como errores tuyos ni "corrijas" propuestas anteriores por eso; no repitas cambios ya aplicados.`,
 };
 
 // ------------------------------------------------------------------ ejecución de herramientas
@@ -274,6 +275,13 @@ export async function runAgent(args: {
     content: m.rol === 'user' ? `<mensaje_usuario>\n${escapeTags(m.contenido)}\n</mensaje_usuario>` : m.contenido,
   }));
   while (messages.length && messages[0].role !== 'user') messages.shift();
+  // Une turnos consecutivos del mismo rol (p. ej. propuesta + nota del sistema tras confirmar).
+  for (let i = messages.length - 1; i > 0; i--) {
+    if (messages[i].role === messages[i - 1].role && typeof messages[i].content === 'string' && typeof messages[i - 1].content === 'string') {
+      messages[i - 1] = { role: messages[i].role, content: `${messages[i - 1].content}\n\n${messages[i].content}` };
+      messages.splice(i, 1);
+    }
+  }
   messages.push({ role: 'user', content: `<mensaje_usuario>\n${escapeTags(args.mensaje)}\n</mensaje_usuario>` });
 
   let modelo: string | undefined;
