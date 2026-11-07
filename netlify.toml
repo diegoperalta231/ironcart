@@ -1,26 +1,13 @@
-# IRONCART · configuración de Netlify
+# IRONCART · despliegue de producción (Netlify sirve el frontend; la API es una Supabase Edge Function)
+# - Frontend: deploy/index.html (compilado y probado; generado con
+#     VITE_API_URL=https://stabmugohevmexcrbcwa.supabase.co/functions/v1/api VITE_ROUTER=hash \
+#     node scripts/local/build-frontend.mjs --single && cp dist-single/index.html deploy/)
+# - API: supabase/functions/api (ver README › Despliegue).
+# Para desplegar TODO en Netlify (Vite + Netlify Functions) usa netlify.funciones.toml.
 [build]
-  command   = "npm run build"
-  publish   = "dist"
-  functions = "netlify/functions"
+  command = "echo 'Sitio precompilado en deploy/index.html'"
+  publish = "deploy"
 
-[build.environment]
-  NODE_VERSION = "22"
-  # Las credenciales NO van aquí: las variables de netlify.toml no llegan a las
-  # funciones en tiempo de ejecución. Configúralas en Site configuration →
-  # Environment variables (ver .env.example y README).
-
-[functions]
-  node_bundler = "esbuild"
-
-# 1) API serverless: todo /api/* lo atiende netlify/functions/api.ts
-[[redirects]]
-  from   = "/api/*"
-  to     = "/.netlify/functions/api/:splat"
-  status = 200
-  force  = true
-
-# 2) SPA: cualquier otra ruta sirve index.html (el enrutador del cliente decide)
 [[redirects]]
   from   = "/*"
   to     = "/index.html"
@@ -34,9 +21,4 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-rZs25Mn4lvpLey7gJ+JqzSNKu37lyr2HfVu3+XlqXpM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://stabmugohevmexcrbcwa.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
