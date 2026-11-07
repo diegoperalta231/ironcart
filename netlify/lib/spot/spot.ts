@@ -228,7 +228,9 @@ export async function handleSpotMessage(input: { mensaje: string; conversacionId
     conversacion_id: input.conversacionId, usuario_id: usuario?.id ?? null, limite: env.historyTurns * 2,
   });
   const history = ctx.mensajes;
-  const prevIds = [...history].reverse().find((m) => m.rol === 'assistant' && m.metadatos?.productos_ids?.length)?.metadatos?.productos_ids ?? [];
+  // Productos mencionados en las dos últimas respuestas (para "ese", "las dos", "ambos"...).
+  const prevIds = [...new Set([...history].reverse().filter((m) => m.rol === 'assistant' && m.metadatos?.productos_ids?.length)
+    .slice(0, 2).flatMap((m) => m.metadatos?.productos_ids ?? []))].slice(0, 4);
 
   const safety = detectSafety(mensaje);
   const nlu = classify(mensaje);

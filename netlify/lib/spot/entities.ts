@@ -48,10 +48,11 @@ const QUERY_STOP = new Set(
     'un una unos unas de del al a en y o para por con sin mi me tu su es son se lo le les favor hola spot ' +
     'diferencia entre mejor compara comparar comparame vs versus recomiendas recomienda recomiendame conviene ' +
     'info informacion detalles detalle sobre acerca trae contiene ingredientes porcion porciones algo alguna alguno ' +
-    'ese esa eso este esta mismo misma ademas tambien otra otro y bueno buena sabes puedes podrias').split(' '),
+    'ese esa eso este esta mismo misma ademas tambien otra otro y bueno buena sabes puedes podrias ' +
+    'dos ambos ambas cual barata barato baratas baratos mas menos economica economico conviene convienen sirve').split(' '),
 );
 
-const ANAPHORA = /\b(ese|esa|eso|este|esta|esos|esas|el mismo|la misma|ese producto|esa proteina|lo|la anterior|el anterior|el primero|el segundo|la primera|la segunda)\b/;
+const ANAPHORA = /\b(las dos|los dos|ambos|ambas|cual de (los|las|estos|estas)|ese|esa|eso|este|esta|esos|esas|el mismo|la misma|ese producto|esa proteina|lo|la anterior|el anterior|el primero|el segundo|la primera|la segunda)\b/;
 
 export function extractEntities(raw: string): Entities {
   const n = normalizeForNlu(raw);
