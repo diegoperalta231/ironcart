@@ -7,7 +7,7 @@ import { useStore } from '../context/Store';
 import { api, ApiError } from '../lib/api';
 import { dinero, local } from '../lib/format';
 import { Link } from '../lib/router';
-import type { Producto, SpotRespuesta } from '../lib/types';
+import type { AccionPropuesta, CambioPropuesto, Producto, SpotRespuesta } from '../lib/types';
 import { IconCarrito, IconCerrar, IconEnviar, IconReiniciar, SpotMark } from './Icons';
 import ProductArt from './ProductArt';
 import { Disponibilidad } from './ProductCard';
@@ -20,20 +20,28 @@ interface Msg {
   fuentes?: SpotRespuesta['fuentes'];
   contingencia?: boolean;
   error?: boolean;
+  accion?: AccionPropuesta;
 }
 
 const CONV_KEY = 'ic_spot_conversacion';
 const SUGERENCIAS = [
   '¿Tienen disponible la proteína Gold Standard de 5 libras?',
+  'Agrega una creatina de Optimum de 300 g a mi carrito',
   '¿Cuál es la diferencia entre whey y caseína?',
-  '¿Qué creatina es más barata?',
   '¿Cuánto cuesta el envío?',
+];
+const SUGERENCIAS_ADMIN = [
+  '¿Qué productos tienen 5 unidades o menos?',
+  'Sube 10 unidades de stock a la creatina Optimum de 300 g',
+  'Pon la ISO100 en oferta a $74.99 con precio anterior de $79.99',
+  'Marca el pedido 12345 como entregado',
 ];
 const BIENVENIDA: Msg = {
   id: 'bienvenida',
   rol: 'assistant',
-  texto: '¡Hola! Soy **Spot**, el asistente de IronCart. Puedo buscar productos con su precio y existencias reales, compararlos, explicarte diferencias entre suplementos, contarte cómo funcionan los envíos y pagos o revisar el estado de tus pedidos.\n\nNo doy consejos médicos ni dosis personalizadas: para eso, tu médico o nutricionista.',
+  texto: '¡Hola! Soy **Spot**, el asistente de IronCart. Puedo buscar productos con su precio y existencias reales, **agregarlos a tu carrito** con solo pedírmelo, compararlos, explicarte diferencias entre suplementos, contarte cómo funcionan los envíos y pagos o revisar el estado de tus pedidos.\n\nNo doy consejos médicos ni dosis personalizadas: para eso, tu médico o nutricionista.',
 };
+const BIENVENIDA_ADMIN = 'Hola, administrador. Además de todo lo que hago para los clientes, puedo **gestionar el catálogo y los pedidos**: crear, modificar o eliminar productos, cambiar precios, ofertas, stock y visibilidad, y actualizar el estado de los pedidos.\n\nTe mostraré cada cambio para que lo **confirmes** antes de aplicarlo, y todo queda registrado en el historial de auditoría.';
 
 const uid = () => Math.random().toString(36).slice(2);
 
@@ -85,8 +93,81 @@ function TarjetaProducto({ p, onNavegar }: { p: Producto; onNavegar: () => void 
   );
 }
 
+const CAMPOS: Record<string, string> = {
+  nombre: 'Nombre', marca: 'Marca', categoria: 'Categoría', descripcion: 'Descripción', presentacion: 'Presentación',
+  sabor: 'Sabor', porciones: 'Porciones', precio: 'Precio', precio_anterior: 'Precio anterior', stock: 'Stock',
+  activo: 'Visible en la tienda', destacado: 'Destacado', imagen: 'Imagen', color: 'Color', beneficios: 'Beneficios', estado: 'Estado',
+};
+const TIPOS: Record<CambioPropuesto['tipo'], string> = { crear: 'Crear', actualizar: 'Modificar', eliminar: 'Eliminar', estado_pedido: 'Pedido' };
+const fmtValor = (k: string, v: unknown) => {
+  if (v === null || v === undefined || v === '') return '—';
+  if (typeof v === 'boolean') return v ? 'sí' : 'no';
+  if ((k === 'precio' || k === 'precio_anterior') && typeof v === 'number') return dinero(v);
+  if (Array.isArray(v)) return v.join(', ');
+  const t = String(v);
+  return t.length > 80 ? t.slice(0, 77) + '…' : t;
+};
+
+/** Cambios que Spot propone al administrador. Nada se aplica hasta pulsar "Confirmar". */
+function TarjetaAccion({ accion, conversacionId }: { accion: AccionPropuesta; conversacionId: string | null }) {
+  const { avisar, refrescarCarrito } = useStore();
+  const [estado, setEstado] = useState<'pendiente' | 'enviando' | 'aplicada' | 'cancelada' | 'error'>('pendiente');
+  const [error, setError] = useState<string | null>(null);
+  const resolver = async (op: 'confirmar' | 'cancelar') => {
+    setEstado('enviando'); setError(null);
+    try {
+      await api(`/admin/acciones/${accion.id}/${op}`, { method: 'POST', body: { conversacion_id: conversacionId } });
+      setEstado(op === 'confirmar' ? 'aplicada' : 'cancelada');
+      if (op === 'confirmar') { avisar('Cambios aplicados en la tienda.'); refrescarCarrito(); window.dispatchEvent(new Event('ironcart:catalogo')); }
+    } catch (e) {
+      setEstado('error'); setError((e as ApiError).message);
+    }
+  };
+  return (
+    <div className="mt-2.5 rounded-md border border-naranja/60 bg-hierro p-3">
+      <p className="text-xs font-semibold text-naranja">Cambios propuestos ({accion.resumen.length})</p>
+      <ul className="mt-2 space-y-2.5">
+        {accion.resumen.map((c, i) => (
+          <li key={i} className="text-[0.85rem]">
+            <p><span className="font-semibold text-hueso">{TIPOS[c.tipo]}:</span> {c.producto}</p>
+            {c.tipo === 'actualizar' || c.tipo === 'estado_pedido' ? (
+              <ul className="mt-0.5 text-niebla">
+                {Object.keys(c.despues ?? {}).map((k) => (
+                  <li key={k}>{CAMPOS[k] ?? k}: {fmtValor(k, c.antes?.[k])} <span aria-hidden="true">→</span><span className="sr-only">pasa a</span> <span className="text-hueso">{fmtValor(k, c.despues?.[k])}</span></li>
+                ))}
+              </ul>
+            ) : c.tipo === 'crear' ? (
+              <p className="mt-0.5 text-niebla">
+                {['marca', 'categoria', 'presentacion', 'precio', 'stock'].map((k) => `${CAMPOS[k]}: ${fmtValor(k, c.despues?.[k])}`).join(' · ')}
+              </p>
+            ) : (
+              <p className="mt-0.5 text-niebla">{c.nota}</p>
+            )}
+          </li>
+        ))}
+      </ul>
+      {estado === 'pendiente' || estado === 'enviando' ? (
+        <div className="mt-3 flex gap-2">
+          <button type="button" disabled={estado === 'enviando'} onClick={() => resolver('confirmar')} className="rounded bg-naranja px-3 py-1.5 text-sm font-semibold text-black disabled:opacity-50">
+            {estado === 'enviando' ? 'Aplicando…' : 'Confirmar y aplicar'}
+          </button>
+          <button type="button" disabled={estado === 'enviando'} onClick={() => resolver('cancelar')} className="rounded border border-acero px-3 py-1.5 text-sm hover:border-hueso disabled:opacity-50">
+            Cancelar
+          </button>
+        </div>
+      ) : (
+        <p role="status" className={`mt-3 text-sm ${estado === 'aplicada' ? 'text-lima' : estado === 'error' ? 'text-error' : 'text-niebla'}`}>
+          {estado === 'aplicada' ? '✓ Cambios aplicados.' : estado === 'cancelada' ? 'Propuesta cancelada. No se modificó nada.' : error}
+        </p>
+      )}
+      <p className="mt-2 text-[0.7rem] text-niebla">La propuesta caduca en {accion.expira_en_min} minutos. Todo cambio queda en el historial de auditoría.</p>
+    </div>
+  );
+}
+
 export default function SpotWidget() {
-  const { spotAbierto, abrirSpot, cerrarSpot, preguntaPendiente, consumirPregunta, usuario } = useStore();
+  const { spotAbierto, abrirSpot, cerrarSpot, preguntaPendiente, consumirPregunta, usuario, setCarrito } = useStore();
+  const esAdmin = usuario?.rol === 'admin';
   const [msgs, setMsgs] = useState<Msg[]>([BIENVENIDA]);
   const [texto, setTexto] = useState('');
   const [pensando, setPensando] = useState(false);
@@ -142,9 +223,10 @@ export default function SpotWidget() {
       const r = await api<SpotRespuesta>('/chatbot/mensaje', { method: 'POST', body: { mensaje, conversacion_id: conv.current } });
       conv.current = r.conversacion_id;
       local.set(CONV_KEY, r.conversacion_id);
+      if (r.carrito) setCarrito(r.carrito);
       setMsgs((m) => [...m, {
         id: uid(), rol: 'assistant', texto: r.respuesta, productos: r.productos, fuentes: r.fuentes,
-        contingencia: r.meta.generador === 'plantilla_contingencia',
+        contingencia: r.meta.generador === 'plantilla_contingencia', accion: r.accion,
       }]);
       if (r.meta.generador === 'plantilla_contingencia') setEstadoIA('limitado');
       else if (r.meta.generador === 'claude') setEstadoIA('en_linea');
@@ -157,7 +239,7 @@ export default function SpotWidget() {
     } finally {
       setPensando(false);
     }
-  }, [pensando]);
+  }, [pensando, setCarrito]);
 
   useEffect(() => {
     if (spotAbierto && preguntaPendiente) { enviar(preguntaPendiente); consumirPregunta(); }
@@ -201,7 +283,7 @@ export default function SpotWidget() {
               <h2 className="font-display text-2xl font-extrabold leading-none">Spot</h2>
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-niebla">
                 <span className={`h-2 w-2 rounded-full ${estadoIA === 'limitado' ? 'bg-alerta' : 'bg-lima'}`} aria-hidden="true" />
-                {estadoIA === 'limitado' ? 'Modo limitado: respuestas sin IA' : 'En línea, asistente con IA (Claude)'}
+                {estadoIA === 'limitado' ? 'Modo limitado: respuestas sin IA' : esAdmin ? 'Modo administrador · Claude' : 'En línea, asistente con IA (Claude)'}
               </p>
             </div>
             <button type="button" onClick={reiniciar} className="rounded-md p-2 text-niebla hover:bg-grafito hover:text-hueso" title="Nueva conversación" aria-label="Iniciar una conversación nueva">
@@ -219,10 +301,11 @@ export default function SpotWidget() {
                 <div className={m.rol === 'user'
                   ? 'max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-naranja px-3.5 py-2 text-[0.95rem] text-black'
                   : `max-w-[88%] rounded-2xl rounded-tl-sm px-3.5 py-2 text-[0.95rem] text-hueso/90 ${m.error ? 'border border-error/50 bg-[#2a1616]' : 'bg-grafito'}`}>
-                  {m.rol === 'assistant' ? <Rico texto={m.texto} /> : m.texto}
+                  {m.rol === 'assistant' ? <Rico texto={m.id === 'bienvenida' && esAdmin ? BIENVENIDA_ADMIN : m.texto} /> : m.texto}
                   {!!m.productos?.length && (
                     <div className="mt-2.5 space-y-2">{m.productos.map((p) => <TarjetaProducto key={p.id} p={p} onNavegar={cerrarEnMovil} />)}</div>
                   )}
+                  {m.accion && <TarjetaAccion accion={m.accion} conversacionId={conv.current} />}
                   {!!m.fuentes?.length && (
                     <p className="mt-2 border-t border-acero pt-1.5 text-xs text-niebla">
                       Basado en: {m.fuentes.map((f) => f.titulo).join('; ')}
@@ -244,7 +327,7 @@ export default function SpotWidget() {
               <div className="pl-9">
                 <p className="mb-2 text-xs text-niebla">Prueba con:</p>
                 <div className="flex flex-col items-start gap-2">
-                  {SUGERENCIAS.map((s) => (
+                  {(esAdmin ? SUGERENCIAS_ADMIN : SUGERENCIAS).map((s) => (
                     <button key={s} type="button" onClick={() => enviar(s)}
                       className="rounded-xl border border-acero px-3 py-1.5 text-left text-sm text-hueso/90 hover:border-naranja hover:text-hueso">
                       {s}

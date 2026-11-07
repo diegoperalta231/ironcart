@@ -44,5 +44,16 @@ export interface SpotRespuesta {
   respuesta: string;
   productos: Producto[];
   fuentes: Array<{ titulo: string; slug: string; categoria: string }>;
-  meta: { intent: string; confianza: number; ruta: string; fallback: boolean; generador: string; motivo_contingencia?: string; rag_modo?: string };
+  meta: { intent: string; confianza: number; ruta: string; fallback: boolean; generador: string; motivo_contingencia?: string; rag_modo?: string; herramientas?: string[] };
+  carrito?: Carrito;
+  accion?: AccionPropuesta;
 }
+
+export interface CambioPropuesto {
+  tipo: 'crear' | 'actualizar' | 'eliminar' | 'estado_pedido';
+  producto: string;
+  antes: Record<string, unknown> | null;
+  despues: Record<string, unknown> | null;
+  nota?: string;
+}
+export interface AccionPropuesta { id: string; resumen: CambioPropuesto[]; expira_en_min: number }

@@ -11,17 +11,18 @@ import { dinero, ESTADOS_PEDIDO, fecha } from '../lib/format';
 import { Link, useQuery, useRouter } from '../lib/router';
 import type { Pedido } from '../lib/types';
 
-type Tab = 'resumen' | 'productos' | 'pedidos' | 'spot' | 'contacto';
+type Tab = 'resumen' | 'productos' | 'pedidos' | 'spot' | 'historial' | 'contacto';
 const TABS: Array<[Tab, string]> = [
-  ['resumen', 'Resumen'], ['productos', 'Productos'], ['pedidos', 'Pedidos'], ['spot', 'Conversaciones de Spot'], ['contacto', 'Mensajes de contacto'],
+  ['resumen', 'Resumen'], ['productos', 'Productos'], ['pedidos', 'Pedidos'], ['spot', 'Conversaciones de Spot'],
+  ['historial', 'Historial de cambios'], ['contacto', 'Mensajes de contacto'],
 ];
 
 const RUTAS: Record<string, string> = {
-  transaccional: 'Datos (precio y stock)', pedido: 'Estado de pedido', conocimiento: 'Conocimiento (RAG)',
+  transaccional: 'Datos (precio y stock)', carrito: 'Carrito por chat', admin: 'Gestión (admin)', sin_permiso: 'Acción sin permiso', pedido: 'Estado de pedido', conocimiento: 'Conocimiento (RAG)',
   conversacion: 'Saludo / despedida', seguridad_medica: 'Seguridad médica', seguridad_inyeccion: 'Intento de inyección',
   seguridad_emergencia: 'Emergencia', fuera_de_dominio: 'Fuera de dominio', aclaracion: 'Pidió aclaración',
 };
-const esSeguridad = (r: string) => r.startsWith('seguridad') || r === 'fuera_de_dominio';
+const esSeguridad = (r: string) => r.startsWith('seguridad') || r === 'fuera_de_dominio' || r === 'sin_permiso';
 
 interface Resumen {
   tienda: { productos_activos: number; productos_inactivos: number; agotados: number; pocas_unidades: number; usuarios: number;
@@ -357,6 +358,53 @@ function TabSpot() {
   );
 }
 
+interface Auditoria {
+  id: number; creado_en: string; origen: 'spot' | 'panel'; entidad: string; entidad_ref: string; operacion: string;
+  antes: Record<string, unknown> | null; despues: Record<string, unknown> | null; usuario: string | null;
+}
+const OPERACION: Record<string, string> = { crear: 'Creó', actualizar: 'Modificó', eliminar: 'Eliminó', desactivar: 'Desactivó', estado_pedido: 'Cambió estado de' };
+const valorCorto = (v: unknown) => v === null || v === undefined ? '—' : typeof v === 'object' ? JSON.stringify(v).slice(0, 60) : String(v).slice(0, 60);
+
+function TabHistorial() {
+  const [lista, setLista] = useState<Auditoria[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => { api<Auditoria[]>('/admin/auditoria').then(setLista).catch((e) => setError(e.message)); }, []);
+  if (!lista) return <Cargando error={error} />;
+  if (lista.length === 0) return <p className="py-10 text-niebla">Todavía no hay cambios registrados.</p>;
+  return (
+    <div className="relative overflow-x-auto rounded-lg border border-grafito">
+      <table className="w-full min-w-[760px] text-left text-sm">
+        <thead className="bg-carbon text-niebla">
+          <tr>
+            <th scope="col" className="px-3 py-2.5 font-medium">Fecha</th>
+            <th scope="col" className="px-3 py-2.5 font-medium">Origen</th>
+            <th scope="col" className="px-3 py-2.5 font-medium">Cambio</th>
+            <th scope="col" className="px-3 py-2.5 font-medium">Detalle</th>
+            <th scope="col" className="px-3 py-2.5 font-medium">Usuario</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-grafito">
+          {lista.map((a) => {
+            const campos = a.operacion === 'actualizar' || a.operacion === 'estado_pedido' ? Object.keys(a.despues ?? {}) : [];
+            return (
+              <tr key={a.id}>
+                <td className="whitespace-nowrap px-3 py-2.5 text-niebla">{new Date(a.creado_en).toLocaleString('es-NI')}</td>
+                <td className="px-3 py-2.5"><span className={`rounded px-2 py-0.5 text-xs font-semibold ${a.origen === 'spot' ? 'bg-naranja/15 text-naranja' : 'bg-grafito text-hueso'}`}>{a.origen === 'spot' ? 'Spot (IA)' : 'Panel'}</span></td>
+                <td className="px-3 py-2.5">{OPERACION[a.operacion] ?? a.operacion} {a.entidad === 'pedido' ? `pedido #${a.entidad_ref}` : a.entidad_ref}</td>
+                <td className="px-3 py-2.5 text-niebla">
+                  {campos.length ? campos.map((k) => <div key={k}>{k}: {valorCorto(a.antes?.[k])} → <span className="text-hueso">{valorCorto(a.despues?.[k])}</span></div>)
+                    : a.operacion === 'crear' ? `Precio ${valorCorto(a.despues?.precio)}, stock ${valorCorto(a.despues?.stock)}` : '—'}
+                </td>
+                <td className="px-3 py-2.5 text-niebla">{a.usuario ?? '—'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function TabContacto() {
   const [lista, setLista] = useState<Contacto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -424,6 +472,7 @@ export default function Admin() {
           {tab === 'productos' && <TabProductos />}
           {tab === 'pedidos' && <TabPedidos />}
           {tab === 'spot' && <TabSpot />}
+          {tab === 'historial' && <TabHistorial />}
           {tab === 'contacto' && <TabContacto />}
         </div>
       </div>

@@ -25,6 +25,8 @@
  *  GET    /api/admin/conversaciones?ruta=
  *  PATCH  /api/admin/productos/:id      {precio?, precio_anterior?, stock?, activo?, destacado?}
  *  PATCH  /api/admin/pedidos/:numero    {estado}           (todas /api/admin/* requieren rol admin)
+ *  POST   /api/admin/acciones/:id/confirmar | /cancelar    (cambios propuestos por Spot)
+ *  GET    /api/admin/auditoria
  */
 import { rpc } from '../lib/db';
 import { env } from '../lib/env';
@@ -233,7 +235,9 @@ on('POST', /^\/api\/chatbot\/mensaje$/, async (req, _p, ctx) => {
   if (b.mensaje.length > 1200) throw new HttpError(400, 'mensaje_largo', 'El mensaje es demasiado largo (máximo 800 caracteres).');
   const conversacionId = isUuid(b.conversacion_id) ? b.conversacion_id : null;
   const usuario = await currentUser(req);
-  return json(await handleSpotMessage({ mensaje, conversacionId, usuario }));
+  const reply = await handleSpotMessage({ mensaje, conversacionId, usuario, carritoId: cartIdFromCookie(req) });
+  // Si Spot creó o cambió el carrito, se recuerda igual que en /api/carrito (cookie o cabecera).
+  return reply.carrito ? cartResponse(req, reply as unknown as Record<string, unknown>) : json(reply);
 });
 
 on('GET', /^\/api\/chatbot\/historial$/, async (req) => {
@@ -301,7 +305,7 @@ on('GET', /^\/api\/admin\/conversaciones$/, async (req) => {
 });
 
 on('PATCH', /^\/api\/admin\/productos\/(\d{1,9})$/, async (req, [id]) => {
-  await requireAdmin(req);
+  const admin = await requireAdmin(req);
   const b = await readJson(req);
   const p: Record<string, unknown> = { id: Number(id) };
   const dinero = (v: unknown, campo: string) => {
@@ -317,6 +321,7 @@ on('PATCH', /^\/api\/admin\/productos\/(\d{1,9})$/, async (req, [id]) => {
       p[k] = b[k];
     }
   }
+  p.usuario_id = admin.id;
   const r = await rpc<{ ok: boolean; error?: string; producto?: unknown }>('api_admin_producto_actualizar', p);
   if (!r.ok) {
     const msg: Record<string, [number, string]> = {
@@ -330,13 +335,50 @@ on('PATCH', /^\/api\/admin\/productos\/(\d{1,9})$/, async (req, [id]) => {
 });
 
 on('PATCH', /^\/api\/admin\/pedidos\/(\d{1,9})$/, async (req, [numero]) => {
-  await requireAdmin(req);
+  const admin = await requireAdmin(req);
   const b = await readJson(req);
   const estado = v.oneOf(b.estado, 'estado', ESTADOS);
-  const r = await rpc<{ ok: boolean; pedido?: unknown }>('api_admin_pedido_estado', { numero: Number(numero), estado });
+  const r = await rpc<{ ok: boolean; pedido?: unknown }>('api_admin_pedido_estado', { numero: Number(numero), estado, admin_id: admin.id });
   if (!r.ok) throw new HttpError(404, 'no_encontrado', 'Pedido no encontrado.');
   return json(r.pedido);
 });
+
+// Cambios propuestos por Spot: solo el administrador que los pidió puede confirmarlos o cancelarlos.
+on('POST', /^\/api\/admin\/acciones\/([0-9a-f-]{36})\/(confirmar|cancelar)$/, async (req, [id, op]) => {
+  const admin = await requireAdmin(req);
+  if (!isUuid(id)) throw new HttpError(400, 'dato_invalido', 'Acción inválida.');
+  const b = req.headers.get('content-type')?.includes('application/json') ? await readJson(req) : {};
+  if (op === 'cancelar') {
+    const r = await rpc<{ ok: boolean }>('api_admin_cancelar_accion', { id, usuario_id: admin.id });
+    if (!r.ok) throw new HttpError(409, 'no_pendiente', 'Esta propuesta ya no está pendiente.');
+    if (isUuid(b.conversacion_id)) await registrarEnChat(b.conversacion_id, admin, 'El administrador canceló los cambios propuestos. No se modificó nada.');
+    return json({ ok: true, estado: 'cancelada' });
+  }
+  const r = await rpc<{ ok: boolean; error?: string; detalle?: string; resultado?: Array<Record<string, unknown>> }>('api_admin_confirmar_accion', { id, usuario_id: admin.id });
+  if (!r.ok) {
+    const msg: Record<string, [number, string]> = {
+      no_encontrada: [404, 'No se encontró la propuesta.'],
+      ya_resuelta: [409, 'Esta propuesta ya fue confirmada o cancelada.'],
+      expirada: [410, 'La propuesta expiró (15 minutos). Pídele a Spot que la prepare de nuevo.'],
+      fallo_al_aplicar: [422, 'No se pudo aplicar: no se modificó nada. Revisa los datos e inténtalo de nuevo.'],
+    };
+    const [st, m] = msg[r.error ?? ''] ?? [400, 'No se pudo aplicar la propuesta.'];
+    throw new HttpError(st, r.error ?? 'error', m, r.detalle ? { detalle: r.detalle } : undefined);
+  }
+  if (isUuid(b.conversacion_id)) await registrarEnChat(b.conversacion_id, admin, `El administrador confirmó los cambios propuestos y se aplicaron (${r.resultado?.length ?? 0} operaciones).`);
+  return json({ ok: true, estado: 'aplicada', resultado: r.resultado });
+});
+
+on('GET', /^\/api\/admin\/auditoria$/, async (req) => { await requireAdmin(req); return json(await rpc('api_admin_auditoria')); });
+
+/** Deja constancia en la conversación para que Spot tenga el contexto en el siguiente turno. */
+async function registrarEnChat(conversacionId: string, admin: Usuario, texto: string) {
+  const ctx = await rpc<{ conversacion_id: string }>('api_chat_contexto', { conversacion_id: conversacionId, usuario_id: admin.id, limite: 0 });
+  if (ctx.conversacion_id !== conversacionId) return; // no era su conversación
+  await rpc('api_chat_guardar', { conversacion_id: conversacionId, mensajes: [
+    { rol: 'assistant', contenido: texto, ruta: 'admin', metadatos: { generador: 'sistema' } },
+  ] }).catch(() => {});
+}
 
 // -------------------------------------------------------------- despacho
 export default async (req: Request, context: Ctx = {}): Promise<Response> => {

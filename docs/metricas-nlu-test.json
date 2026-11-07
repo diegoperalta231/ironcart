@@ -1,13 +1,13 @@
 {
   "conjunto": "test",
-  "fecha": "2026-11-07T00:39:59.810Z",
+  "fecha": "2026-11-07T15:51:17.598Z",
   "ejemplos_entrenamiento": 290,
   "ejemplos_validacion": 49,
   "intenciones": 20,
   "exactitud": 0.7959,
   "f1_macro": 0.7722,
   "umbral_confianza": 0.3,
-  "latencia_media_ms": 1.099,
+  "latencia_media_ms": 1.48,
   "exactitud_enrutamiento": 0.8367,
   "errores_enrutamiento": [
     {

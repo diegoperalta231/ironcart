@@ -22,7 +22,8 @@ REGLAS NO NEGOCIABLES
 export type Route =
   | 'transaccional' | 'pedido' | 'conocimiento' | 'conversacion'
   | 'seguridad_medica' | 'seguridad_inyeccion' | 'seguridad_emergencia'
-  | 'fuera_de_dominio' | 'aclaracion';
+  | 'fuera_de_dominio' | 'aclaracion'
+  | 'carrito' | 'admin' | 'sin_permiso';
 
 export const ROUTE_INSTRUCTIONS: Record<Route, string> = {
   transaccional:
@@ -40,6 +41,10 @@ export const ROUTE_INSTRUCTIONS: Record<Route, string> = {
   seguridad_emergencia: '',
   fuera_de_dominio:
     'La pregunta está fuera del dominio de IronCart. NO la respondas ni des instrucciones, datos o consejos sobre ese tema. Di amablemente que solo puedes ayudar con la tienda, suplementos, entrenamiento y nutrición deportiva, y sugiere 2 o 3 cosas concretas que sí puedes hacer.',
+  // Rutas atendidas por el agente con herramientas (ver agent.ts) o por plantilla fija.
+  carrito: '',
+  admin: '',
+  sin_permiso: '',
   aclaracion:
     'No está claro qué necesita el usuario. Pide una aclaración breve y ofrece 2 o 3 opciones concretas relacionadas con lo que escribió (por ejemplo: ver precio y stock de un producto, comparar productos, información general de un suplemento).',
 };

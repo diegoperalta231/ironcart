@@ -15,7 +15,8 @@ import { classify, CONFIDENCE_THRESHOLD, type Prediction } from './nlu';
 import { buildContextBlock, escapeTags, SYSTEM_PROMPT, SYSTEM_PROMPT_VERSION, type Route } from './prompts';
 import { retrieve, type Doc, type RagMode } from './retrieval';
 import { detectSafety, EMERGENCY_MESSAGE, guardOutput, MEDICAL_DISCLAIMER, type SafetyResult } from './safety';
-import { normalizeForNlu } from './normalize';
+import { normalizeForNlu, tokenize } from './normalize';
+import { detectAdminIntent, detectAdminQuery, detectCartIntent, runAgent, type AgentMode } from './agent';
 
 export interface ProductoChat {
   id: number; slug: string; nombre: string; marca: string; categoria: string; categoria_slug: string;
@@ -35,14 +36,19 @@ export interface SpotReply {
     motivo_contingencia?: string; rag_modo?: RagMode; modelo?: string; latencia_ms: number;
     seguridad?: { medica: string[]; inyeccion: string[] }; filtros_salida?: string[];
     coincidencia_exacta?: boolean | null; pedido_encontrado?: boolean | null; autenticado?: boolean;
+    herramientas?: string[];
   };
+  /** Carrito actualizado cuando Spot lo modificó (modo carrito). */
+  carrito?: Record<string, unknown>;
+  /** Cambios propuestos por Spot que el administrador debe confirmar (modo admin). */
+  accion?: { id: string; resumen: unknown[]; expira_en_min: number };
 }
 
 const PRODUCT_INTENTS = new Set(['info_producto', 'buscar_producto', 'precio_disponibilidad', 'comparar_productos', 'recomendacion_general']);
 const KNOWLEDGE_INTENTS = new Set(['info_categoria_suplemento', 'info_entrenamiento', 'info_nutricion_deportiva', 'metodos_pago', 'envios', 'horarios', 'politicas', 'contacto', 'proceso_compra', 'ayuda']);
 const CONVERSATION_INTENTS = new Set(['saludo', 'despedida']);
 
-interface HistoryMsg { rol: 'user' | 'assistant'; contenido: string; metadatos?: { productos_ids?: number[] } }
+interface HistoryMsg { rol: 'user' | 'assistant'; contenido: string; ruta?: string; metadatos?: { productos_ids?: number[] } }
 
 // ---------------------------------------------------------------------------
 // Router
@@ -220,7 +226,7 @@ function contingency(route: Route, data: Record<string, unknown>, docs: Doc[]): 
 // ---------------------------------------------------------------------------
 // Punto de entrada
 // ---------------------------------------------------------------------------
-export async function handleSpotMessage(input: { mensaje: string; conversacionId: string | null; usuario: Usuario | null }): Promise<SpotReply> {
+export async function handleSpotMessage(input: { mensaje: string; conversacionId: string | null; usuario: Usuario | null; carritoId?: string | null }): Promise<SpotReply> {
   const t0 = Date.now();
   const { mensaje, usuario } = input;
 
@@ -236,6 +242,22 @@ export async function handleSpotMessage(input: { mensaje: string; conversacionId
   const nlu = classify(mensaje);
   const ent = extractEntities(mensaje);
   let route = decideRoute(mensaje, safety, nlu, ent, prevIds.length > 0);
+
+  // ----- Acciones (agente con herramientas), separadas por rol verificado en el servidor -----
+  // Las rutas de seguridad siempre tienen prioridad: un mensaje médico o de inyección nunca llega al agente.
+  let agentMode: AgentMode | null = null;
+  if (!route.startsWith('seguridad')) {
+    const esAdmin = usuario?.rol === 'admin';
+    const rutaAnterior = [...history].reverse().find((m) => m.rol === 'assistant')?.ruta;
+    const seguimiento = tokenize(normalizeForNlu(mensaje)).length <= 8
+      && !(KNOWLEDGE_INTENTS.has(nlu.intent) && nlu.confidence >= 0.45);
+    const quiereAdministrar = detectAdminIntent(mensaje);
+    const quiereCarrito = detectCartIntent(mensaje);
+    if (esAdmin && (quiereAdministrar || detectAdminQuery(mensaje) || (rutaAnterior === 'admin' && seguimiento))) agentMode = 'admin';
+    else if (!esAdmin && quiereAdministrar && !quiereCarrito) route = 'sin_permiso'; // el permiso se evalúa antes que el seguimiento
+    else if (quiereCarrito || (rutaAnterior === 'carrito' && seguimiento)) agentMode = 'carrito';
+  }
+  if (agentMode) route = agentMode;
 
   let datos: Record<string, unknown> | undefined;
   let docs: Doc[] = [];
@@ -280,9 +302,37 @@ export async function handleSpotMessage(input: { mensaje: string; conversacionId
   let modelo: string | undefined;
   let filtros: string[] = [];
 
+  let herramientas: string[] | undefined;
+  let carritoActualizado: Record<string, unknown> | undefined;
+  let accion: SpotReply['accion'];
+
   if (route === 'seguridad_emergencia') {
     respuesta = EMERGENCY_MESSAGE;
     generador = 'seguridad';
+  } else if (route === 'sin_permiso') {
+    respuesta = 'Solo un administrador de IronCart puede crear, modificar o eliminar productos, cambiar precios o inventario, o actualizar pedidos. Con gusto te ayudo a buscar productos, compararlos o agregarlos a tu carrito.';
+    generador = 'seguridad';
+  } else if (agentMode) {
+    const a = await runAgent({
+      mode: agentMode, mensaje, history: history.map((m) => ({ rol: m.rol, contenido: m.contenido })),
+      usuario, carritoId: input.carritoId ?? null, conversacionId: ctx.conversacion_id,
+    });
+    herramientas = a.herramientas;
+    carritoActualizado = a.carrito;
+    accion = a.accion;
+    productos = a.productos.map(cleanProduct);
+    modelo = a.modelo;
+    if (a.ok && a.texto) {
+      respuesta = guardOutput(a.texto, route).text;
+    } else {
+      generador = 'plantilla_contingencia';
+      motivo = a.motivo;
+      respuesta = agentMode === 'admin'
+        ? 'No pude procesar esa gestión con el asistente en este momento. Puedes hacer el cambio desde el Panel de administración.'
+        : carritoActualizado
+          ? 'Actualicé tu carrito, pero no pude terminar de redactar la respuesta. Revisa el carrito para ver los cambios.'
+          : 'No pude modificar tu carrito desde el chat en este momento. Puedes agregar productos desde su ficha con el botón "Agregar al carrito".';
+    }
   } else {
     const contextBlock = buildContextBlock({
       route, intent: nlu.intent, confidence: nlu.confidence, datos,
@@ -314,9 +364,9 @@ export async function handleSpotMessage(input: { mensaje: string; conversacionId
   }
 
   // En rutas de seguridad o fuera de dominio no se muestran productos.
-  if (route !== 'transaccional') productos = [];
+  if (route !== 'transaccional' && route !== 'carrito' && route !== 'admin') productos = [];
 
-  const fallback = ['seguridad_medica', 'seguridad_inyeccion', 'seguridad_emergencia', 'fuera_de_dominio', 'aclaracion'].includes(route);
+  const fallback = ['seguridad_medica', 'seguridad_inyeccion', 'seguridad_emergencia', 'fuera_de_dominio', 'aclaracion', 'sin_permiso'].includes(route);
   const fuentes = docs.map((d) => ({ titulo: d.titulo, slug: d.slug, categoria: d.categoria }));
   const reply: SpotReply = {
     conversacion_id: ctx.conversacion_id,
@@ -331,7 +381,10 @@ export async function handleSpotMessage(input: { mensaje: string; conversacionId
       coincidencia_exacta: route === 'transaccional' ? (datos?.coincidencia_exacta as boolean | null) : undefined,
       pedido_encontrado: route === 'pedido' && datos && 'pedido' in datos ? datos.pedido !== null : undefined,
       autenticado: route === 'pedido' ? Boolean(usuario) : undefined,
+      herramientas,
     },
+    ...(carritoActualizado ? { carrito: carritoActualizado } : {}),
+    ...(accion ? { accion } : {}),
   };
 
   await rpc('api_chat_guardar', {
@@ -342,7 +395,8 @@ export async function handleSpotMessage(input: { mensaje: string; conversacionId
       { rol: 'assistant', contenido: respuesta, intent: nlu.intent, ruta: route, fallback,
         metadatos: { productos_ids: productos.map((p) => p.id), fuentes: fuentes.map((f) => f.slug), generador,
                      motivo_contingencia: motivo ?? null, modelo: modelo ?? null, prompt: SYSTEM_PROMPT_VERSION,
-                     rag_modo: ragMode ?? null, filtros_salida: filtros, latencia_ms: reply.meta.latencia_ms } },
+                     rag_modo: ragMode ?? null, filtros_salida: filtros, latencia_ms: reply.meta.latencia_ms,
+                     herramientas: herramientas ?? null, accion_id: accion?.id ?? null } },
     ],
   }).catch((e) => console.error('[spot] no se pudo guardar el turno:', (e as Error).message));
 
