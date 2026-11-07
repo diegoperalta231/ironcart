@@ -61,6 +61,9 @@ function Cuenta() {
       {abierto && (
         <div role="menu" className="absolute right-0 top-12 z-50 w-56 rounded-md border border-acero bg-carbon p-1.5 shadow-2xl shadow-black/60">
           <p className="truncate px-3 py-2 text-sm text-niebla">{usuario.email}</p>
+          {usuario.rol === 'admin' && (
+            <Link role="menuitem" to="/admin" onClick={() => setAbierto(false)} className="block rounded px-3 py-2 font-semibold text-naranja hover:bg-grafito">Panel de administración</Link>
+          )}
           <Link role="menuitem" to="/pedidos" onClick={() => setAbierto(false)} className="block rounded px-3 py-2 hover:bg-grafito">Mis pedidos</Link>
           <button role="menuitem" type="button" onClick={() => { setAbierto(false); logout(); }} className="block w-full rounded px-3 py-2 text-left hover:bg-grafito">Cerrar sesión</button>
         </div>
@@ -70,7 +73,7 @@ function Cuenta() {
 }
 
 export function Navbar() {
-  const { carrito } = useStore();
+  const { carrito, usuario } = useStore();
   const { loc } = useRouter();
   const [menu, setMenu] = useState(false);
   const n = carrito?.cantidad_total ?? 0;
@@ -124,6 +127,7 @@ export function Navbar() {
                 <Link key={l.to} to={l.to} className={`block border-b border-grafito py-3.5 font-display text-3xl font-bold ${activo(l.to) ? 'text-naranja' : ''}`}>{l.label}</Link>
               ))}
               <Link to="/pedidos" className="block border-b border-grafito py-3.5 font-display text-3xl font-bold">Mis pedidos</Link>
+              {usuario?.rol === 'admin' && <Link to="/admin" className="block border-b border-grafito py-3.5 font-display text-3xl font-bold text-naranja">Administración</Link>}
             </nav>
           </div>
         </div>
@@ -204,7 +208,7 @@ export function Toaster() {
 export function PageHeader({ titulo, children }: { titulo: string; children?: ReactNode }) {
   return (
     <div className="contenedor pb-8 pt-12 sm:pt-16">
-      <h1 className="text-5xl font-extrabold sm:text-7xl">{titulo}</h1>
+      <h1 className="text-[2.6rem] font-extrabold [overflow-wrap:anywhere] sm:text-7xl">{titulo}</h1>
       {children && <div className="mt-3 max-w-2xl text-lg text-niebla">{children}</div>}
     </div>
   );

@@ -21,4 +21,4 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-rZs25Mn4lvpLey7gJ+JqzSNKu37lyr2HfVu3+XlqXpM='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://stabmugohevmexcrbcwa.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-jXdWGE31oJEE0Q9Fdf3hjCHp3oeCylSxua3LJpNQGpY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://stabmugohevmexcrbcwa.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"

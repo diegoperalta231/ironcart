@@ -24,8 +24,9 @@ export function Account() {
       <div className="contenedor max-w-lg py-24">
         <h1 className="text-6xl font-extrabold">Hola, {usuario.nombre.split(' ')[0]}</h1>
         <p className="mt-2 text-niebla">Sesión iniciada como {usuario.email}.</p>
-        <div className="mt-8 flex gap-3">
-          <Link to="/pedidos" className="btn-primario">Mis pedidos</Link>
+        <div className="mt-8 flex flex-wrap gap-3">
+          {usuario.rol === 'admin' && <Link to="/admin" className="btn-primario">Panel de administración</Link>}
+          <Link to="/pedidos" className={usuario.rol === 'admin' ? 'btn-secundario' : 'btn-primario'}>Mis pedidos</Link>
           <button type="button" onClick={logout} className="btn-secundario">Cerrar sesión</button>
         </div>
       </div>

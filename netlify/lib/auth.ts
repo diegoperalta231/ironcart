@@ -33,6 +33,13 @@ export async function requireUser(req: Request): Promise<Usuario> {
   return u;
 }
 
+/** Solo cuentas con rol 'admin'. Sin sesión → 401; con sesión de cliente → 403. */
+export async function requireAdmin(req: Request): Promise<Usuario> {
+  const u = await requireUser(req);
+  if (u.rol !== 'admin') throw new HttpError(403, 'sin_permiso', 'Esta sección es solo para administradores.');
+  return u;
+}
+
 export function cartIdFromCookie(req: Request): string | null {
   const c = req.headers.get('x-ic-cart') || getCookie(req, CART_COOKIE);
   return isUuid(c) ? c : null;

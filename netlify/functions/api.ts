@@ -21,6 +21,10 @@
  *  GET    /api/chatbot/historial?conversacion_id=
  *  POST   /api/contacto                 {nombre, email, asunto, mensaje}
  *  POST   /api/admin/embeddings         (cabecera x-admin-token)
+ *  GET    /api/admin/resumen | /api/admin/productos | /api/admin/pedidos?estado= | /api/admin/contactos
+ *  GET    /api/admin/conversaciones?ruta=
+ *  PATCH  /api/admin/productos/:id      {precio?, precio_anterior?, stock?, activo?, destacado?}
+ *  PATCH  /api/admin/pedidos/:numero    {estado}           (todas /api/admin/* requieren rol admin)
  */
 import { rpc } from '../lib/db';
 import { env } from '../lib/env';
@@ -28,7 +32,7 @@ import {
   assertSameOrigin, clearCookie, clientIp, corsHeaders, errorResponse, HttpError, json, readJson, setCookie,
 } from '../lib/http';
 import {
-  CART_COOKIE, cartIdFromCookie, currentUser, ipKey, isUuid, newToken, rateLimit, requireUser,
+  CART_COOKIE, cartIdFromCookie, currentUser, ipKey, isUuid, newToken, rateLimit, requireAdmin, requireUser,
   SESSION_COOKIE, SESSION_TTL_HOURS, sessionToken, sha256, type Usuario,
 } from '../lib/auth';
 import * as v from '../lib/validate';
@@ -273,6 +277,65 @@ on('POST', /^\/api\/admin\/embeddings$/, async (req) => {
     await rpc('api_conocimiento_guardar_embedding', { id: pend[i].id, embedding: JSON.stringify(vectors[i]), modelo: env.voyageModel });
   }
   return json({ ok: true, procesados: pend.length, estado: await rpc('api_conocimiento_estado_vectorial') });
+});
+
+// -------------------------------------------------------------- panel de administración (rol admin)
+const ESTADOS = ['confirmado', 'preparando', 'enviado', 'entregado', 'cancelado'] as const;
+const RUTAS = ['transaccional', 'pedido', 'conocimiento', 'conversacion', 'seguridad_medica', 'seguridad_inyeccion',
+  'seguridad_emergencia', 'fuera_de_dominio', 'aclaracion'] as const;
+
+on('GET', /^\/api\/admin\/resumen$/, async (req) => { await requireAdmin(req); return json(await rpc('api_admin_resumen')); });
+on('GET', /^\/api\/admin\/productos$/, async (req) => { await requireAdmin(req); return json(await rpc('api_admin_productos')); });
+on('GET', /^\/api\/admin\/contactos$/, async (req) => { await requireAdmin(req); return json(await rpc('api_admin_contactos')); });
+
+on('GET', /^\/api\/admin\/pedidos$/, async (req) => {
+  await requireAdmin(req);
+  const estado = new URL(req.url).searchParams.get('estado') ?? '';
+  return json(await rpc('api_admin_pedidos', { estado: (ESTADOS as readonly string[]).includes(estado) ? estado : '' }));
+});
+
+on('GET', /^\/api\/admin\/conversaciones$/, async (req) => {
+  await requireAdmin(req);
+  const ruta = new URL(req.url).searchParams.get('ruta') ?? '';
+  return json(await rpc('api_admin_conversaciones', { ruta: (RUTAS as readonly string[]).includes(ruta) ? ruta : '', limite: 150 }));
+});
+
+on('PATCH', /^\/api\/admin\/productos\/(\d{1,9})$/, async (req, [id]) => {
+  await requireAdmin(req);
+  const b = await readJson(req);
+  const p: Record<string, unknown> = { id: Number(id) };
+  const dinero = (v: unknown, campo: string) => {
+    if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0 || v > 10000) throw new HttpError(400, 'dato_invalido', `"${campo}" debe ser un monto entre 0.01 y 10000.`, { campo });
+    return Math.round(v * 100) / 100;
+  };
+  if ('precio' in b) p.precio = dinero(b.precio, 'precio');
+  if ('precio_anterior' in b) p.precio_anterior = b.precio_anterior === null ? null : dinero(b.precio_anterior, 'precio_anterior');
+  if ('stock' in b) p.stock = v.int(b.stock, 'stock', { min: 0, max: 100000 });
+  for (const k of ['activo', 'destacado'] as const) {
+    if (k in b) {
+      if (typeof b[k] !== 'boolean') throw new HttpError(400, 'dato_invalido', `"${k}" debe ser verdadero o falso.`, { campo: k });
+      p[k] = b[k];
+    }
+  }
+  const r = await rpc<{ ok: boolean; error?: string; producto?: unknown }>('api_admin_producto_actualizar', p);
+  if (!r.ok) {
+    const msg: Record<string, [number, string]> = {
+      producto_no_encontrado: [404, 'Producto no encontrado.'],
+      precio_anterior_invalido: [400, 'El precio anterior debe ser mayor que el precio actual (o vacío).'],
+    };
+    const [st, m] = msg[r.error ?? ''] ?? [400, 'No se pudo actualizar el producto.'];
+    throw new HttpError(st, r.error ?? 'error', m);
+  }
+  return json(r.producto);
+});
+
+on('PATCH', /^\/api\/admin\/pedidos\/(\d{1,9})$/, async (req, [numero]) => {
+  await requireAdmin(req);
+  const b = await readJson(req);
+  const estado = v.oneOf(b.estado, 'estado', ESTADOS);
+  const r = await rpc<{ ok: boolean; pedido?: unknown }>('api_admin_pedido_estado', { numero: Number(numero), estado });
+  if (!r.ok) throw new HttpError(404, 'no_encontrado', 'Pedido no encontrado.');
+  return json(r.pedido);
 });
 
 // -------------------------------------------------------------- despacho

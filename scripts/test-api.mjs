@@ -250,6 +250,47 @@ await tc('SEG', 'Seguridad de endpoints', async (check) => {
   check('historial de conversación ajena/inexistente → vacío', hist.status === 200 && hist.data.mensajes.length === 0, hist.data);
 });
 
+// ---------------------------------------------------------------- Panel de administración
+// Requiere ADMIN_EMAIL y ADMIN_PASSWORD (no se guardan en el repositorio).
+if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+  await tc('ADM', 'Panel de administración: permisos y operaciones', async (check, note) => {
+    const anon = new Client('anon-adm');
+    check('anónimo → 401', (await anon.req('GET', '/api/admin/resumen')).status === 401);
+    const cli = new Client('cli-adm');
+    await cli.req('POST', '/api/auth/login', { email: 'demo@ironcart.dev', password: 'IronCart2026!' });
+    check('cliente → 403', (await cli.req('GET', '/api/admin/productos')).status === 403);
+    check('cliente no puede editar productos → 403', (await cli.req('PATCH', '/api/admin/productos/1', { stock: 999 })).status === 403);
+    const adm = new Client('adm');
+    const lg = await adm.req('POST', '/api/auth/login', { email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD });
+    check('login admin con rol admin', lg.status === 200 && lg.data.usuario?.rol === 'admin', lg.data);
+    const res = await adm.req('GET', '/api/admin/resumen');
+    check('resumen', res.status === 200 && typeof res.data.tienda?.pedidos === 'number' && Array.isArray(res.data.spot?.por_ruta), res.data);
+    const prods = await adm.req('GET', '/api/admin/productos');
+    const p = prods.data.find((x) => x.slug === 'blenderbottle-classic-28oz');
+    check('lista de productos (incluye vendidos)', prods.status === 200 && p && 'vendidos' in p);
+    const up = await adm.req('PATCH', `/api/admin/productos/${p.id}`, { stock: p.stock + 1, destacado: !p.destacado });
+    const pub = await adm.req('GET', `/api/productos/${p.slug}`);
+    check('editar stock se refleja en el catálogo público', up.status === 200 && pub.data.stock === p.stock + 1, { up: up.data, pub: pub.data?.stock });
+    check('precio anterior ≤ precio → 400', (await adm.req('PATCH', `/api/admin/productos/${p.id}`, { precio_anterior: 1 })).status === 400);
+    check('precio negativo → 400', (await adm.req('PATCH', `/api/admin/productos/${p.id}`, { precio: -5 })).status === 400);
+    await adm.req('PATCH', `/api/admin/productos/${p.id}`, { stock: p.stock, destacado: p.destacado });
+    const off = await adm.req('PATCH', `/api/admin/productos/${p.id}`, { activo: false });
+    check('desactivar oculta el producto del catálogo', off.status === 200 && (await adm.req('GET', `/api/productos/${p.slug}`)).status === 404);
+    await adm.req('PATCH', `/api/admin/productos/${p.id}`, { activo: true });
+    const peds = await adm.req('GET', '/api/admin/pedidos');
+    check('ve pedidos de todos los clientes', peds.status === 200 && peds.data.some((x) => x.numero === 12345) && peds.data[0].cliente?.email, peds.data?.length);
+    const st = await adm.req('PATCH', '/api/admin/pedidos/12345', { estado: 'entregado' });
+    const vistoCliente = await cli.req('GET', '/api/pedidos/12345');
+    check('cambio de estado visible para el cliente', st.status === 200 && vistoCliente.data.estado === 'entregado', vistoCliente.data?.estado);
+    check('estado inválido → 400', (await adm.req('PATCH', '/api/admin/pedidos/12345', { estado: 'perdido' })).status === 400);
+    await adm.req('PATCH', '/api/admin/pedidos/12345', { estado: 'enviado' });
+    const conv = await adm.req('GET', '/api/admin/conversaciones?ruta=seguridad_medica');
+    check('conversaciones filtradas por ruta', conv.status === 200 && conv.data.every((t) => t.ruta === 'seguridad_medica'), conv.data?.length);
+    check('mensajes de contacto', (await adm.req('GET', '/api/admin/contactos')).status === 200);
+    note(`${prods.data.length} productos, ${peds.data.length} pedidos, ${conv.data.length} turnos médicos`);
+  });
+}
+
 if (!args.includes('--skip-rate')) {
   await tc('SEG-RL', 'Rate limiting del chatbot', async (check, note) => {
     const c = new Client('rl');

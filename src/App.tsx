@@ -8,6 +8,7 @@ import { Cart, Checkout, OrderDetail, Orders } from './pages/Commerce';
 import Home from './pages/Home';
 import { About, Account, Contact, NotFound } from './pages/Info';
 import ProductDetail from './pages/ProductDetail';
+import Admin from './pages/Admin';
 
 function Routes() {
   const { loc } = useRouter();
@@ -30,6 +31,7 @@ function Routes() {
   if (path === '/cuenta') return <Account />;
   if (path === '/nosotros') return <About />;
   if (path === '/contacto') return <Contact />;
+  if (path === '/admin') return <Admin />;
   return <NotFound />;
 }
 

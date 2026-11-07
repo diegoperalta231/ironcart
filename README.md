@@ -19,6 +19,7 @@ Tienda online de suplementos deportivos con **Spot**, un asistente de inteligenc
 | Spot: widget, contexto de 5 turnos, nueva conversación, indicador de escritura, sugerencias, tarjetas de producto | Implementado |
 | Spot · Ruta 1 (datos transaccionales), Ruta 2 (RAG), Ruta 3 (seguridad y fallback) | Implementado |
 | Integración con Claude | **Activa en producción** (`claude-haiku-5-5`) |
+| Panel de administración (`/admin`, rol admin): métricas de la tienda y de Spot, edición de precios/stock/visibilidad, estados de pedidos, conversaciones y mensajes de contacto | Implementado |
 | RAG vectorial con pgvector + Voyage AI | Implementado (opcional); **sin probar** en este entorno (ver §13) |
 
 ## 2. Arquitectura
@@ -88,7 +89,7 @@ ironcart/
 │           ├── claude.ts        # cliente de la API Messages
 │           └── spot.ts          # orquestador y router
 ├── database/
-│   ├── 001_schema.sql … 005_seed_knowledge.sql
+│   ├── 001_schema.sql … 006_admin.sql
 │   ├── supabase_todo_en_uno.sql # 001+002+004+005 en un archivo (para el SQL Editor)
 │   └── knowledge/{productos,preguntas_frecuentes,gimnasio_nutricion,politicas}/*.md   # 33 documentos RAG
 ├── scripts/
@@ -157,6 +158,8 @@ curl -X POST https://TU-SITIO/api/admin/embeddings -H "x-admin-token: TU_ADMIN_T
 ```
 
 Cuenta de demostración: `demo@ironcart.dev` / `IronCart2026!` (dueña del pedido #12345).
+
+**Administración:** ejecuta `database/006_admin.sql` y crea una cuenta con rol `admin` (instrucciones al inicio de ese archivo). La contraseña del administrador de producción **no** está en el repositorio. El panel está en `/admin` (o `#/admin`) y en el menú de la cuenta. Todas las rutas `/api/admin/*` verifican el rol en el servidor (anónimo → 401, cliente → 403).
 
 ## 10. Ejecución local
 
