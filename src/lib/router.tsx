@@ -6,20 +6,31 @@ const RouterCtx = createContext<{ loc: Loc; navigate: (to: string, opts?: { repl
   loc: { pathname: '/', search: '' }, navigate: () => {},
 });
 
-const current = (): Loc => ({ pathname: window.location.pathname, search: window.location.search });
+/** Modo hash (#/ruta) para hosting estático de un solo archivo sin reglas de reescritura. */
+export const HASH_MODE = import.meta.env.VITE_ROUTER === 'hash';
+export const href = (to: string) => (HASH_MODE ? `#${to}` : to);
+
+const current = (): Loc => {
+  if (!HASH_MODE) return { pathname: window.location.pathname, search: window.location.search };
+  const h = window.location.hash.replace(/^#/, '') || '/';
+  const i = h.indexOf('?');
+  return i === -1 ? { pathname: h, search: '' } : { pathname: h.slice(0, i), search: h.slice(i) };
+};
 
 export function RouterProvider({ children }: { children: ReactNode }) {
   const [loc, setLoc] = useState<Loc>(current);
   useEffect(() => {
     const onPop = () => setLoc(current());
     window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
+    window.addEventListener('hashchange', onPop);
+    return () => { window.removeEventListener('popstate', onPop); window.removeEventListener('hashchange', onPop); };
   }, []);
   const navigate = useCallback((to: string, opts?: { replace?: boolean }) => {
-    if (to === window.location.pathname + window.location.search) return;
-    window.history[opts?.replace ? 'replaceState' : 'pushState'](null, '', to);
+    const cur = current();
+    if (to === cur.pathname + cur.search) return;
+    window.history[opts?.replace ? 'replaceState' : 'pushState'](null, '', href(to));
     setLoc(current());
-    if (!to.includes('#')) window.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0 });
   }, []);
   return <RouterCtx.Provider value={{ loc, navigate }}>{children}</RouterCtx.Provider>;
 }
@@ -35,7 +46,7 @@ export function Link({ to, children, onClick, ...rest }: AnchorHTMLAttributes<HT
     e.preventDefault();
     navigate(to);
   };
-  return <a href={to} onClick={handle} {...rest}>{children}</a>;
+  return <a href={href(to)} onClick={handle} {...rest}>{children}</a>;
 }
 
 /** Devuelve los parámetros si la ruta coincide con el patrón (p. ej. "/producto/:slug"). */

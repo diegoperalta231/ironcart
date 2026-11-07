@@ -48,6 +48,14 @@ export function setCookie(req: Request, name: string, value: string, maxAgeSec: 
 export const clearCookie = (req: Request, name: string) => setCookie(req, name, '', 0);
 
 // ------------------------- CORS / origen ----------------------------------
+/** Admite entradas exactas o con comodín de subdominio: "https://*.netlify.app". */
+export function originAllowed(origin: string): boolean {
+  return env.allowedOrigins.some((o) => {
+    if (o === origin) return true;
+    const m = o.match(/^(https?:\/\/)\*\.(.+)$/);
+    return !!m && origin.startsWith(m[1]) && origin.endsWith('.' + m[2]) && !origin.slice(m[1].length).includes('/');
+  });
+}
 /** Bloquea peticiones que modifican estado desde orígenes ajenos (CSRF). */
 export function assertSameOrigin(req: Request): void {
   if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return;
@@ -56,18 +64,20 @@ export function assertSameOrigin(req: Request): void {
   const host = req.headers.get('x-forwarded-host') ?? new URL(req.url).host;
   let originHost = '';
   try { originHost = new URL(origin).host; } catch { /* origen inválido */ }
-  if (originHost === host || env.allowedOrigins.includes(origin)) return;
+  if (originHost === host || originAllowed(origin)) return;
   throw new HttpError(403, 'origen_no_permitido', 'Origen no permitido.');
 }
 
 export function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('origin');
-  if (origin && env.allowedOrigins.includes(origin)) {
+  if (origin && originAllowed(origin)) {
     return {
       'access-control-allow-origin': origin,
       'access-control-allow-credentials': 'true',
       'access-control-allow-methods': 'GET,POST,PATCH,DELETE,OPTIONS',
-      'access-control-allow-headers': 'content-type',
+      'access-control-allow-headers': 'content-type, x-ic-session, x-ic-cart',
+      'access-control-expose-headers': 'content-type',
+      'access-control-max-age': '600',
       vary: 'Origin',
     };
   }
@@ -89,5 +99,5 @@ export async function readJson<T = Record<string, unknown>>(req: Request, maxByt
 }
 
 export function clientIp(req: Request, ctxIp?: string): string {
-  return ctxIp ?? req.headers.get('x-nf-client-connection-ip') ?? req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? '0.0.0.0';
+  return ctxIp ?? req.headers.get('x-nf-client-connection-ip') ?? req.headers.get('cf-connecting-ip') ?? req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? '0.0.0.0';
 }

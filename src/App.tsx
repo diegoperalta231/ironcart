@@ -14,8 +14,9 @@ function Routes() {
   const path = loc.pathname.replace(/\/+$/, '') || '/';
 
   useEffect(() => {
-    if (window.location.hash) document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
-  }, [path]);
+    const seccion = new URLSearchParams(loc.search).get('seccion');
+    if (seccion) window.setTimeout(() => document.getElementById(seccion)?.scrollIntoView(), 50);
+  }, [path, loc.search]);
 
   let m: Record<string, string> | null;
   if (path === '/') return <Home />;
@@ -36,11 +37,11 @@ export default function App() {
   return (
     <RouterProvider>
       <StoreProvider>
-        <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded focus:bg-naranja focus:px-4 focus:py-2 focus:text-black">
+        <a href="#contenido" onClick={(e) => { e.preventDefault(); document.getElementById('contenido')?.focus(); }} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded focus:bg-naranja focus:px-4 focus:py-2 focus:text-black">
           Saltar al contenido
         </a>
         <Navbar />
-        <main id="contenido" className="min-h-[60vh]"><Routes /></main>
+        <main id="contenido" tabIndex={-1} className="min-h-[60vh] focus:outline-none"><Routes /></main>
         <Footer />
         <SpotWidget />
         <Toaster />

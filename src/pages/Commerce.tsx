@@ -3,7 +3,8 @@ import { IconCamion, IconCheck, IconPapelera } from '../components/Icons';
 import { PageHeader } from '../components/Layout';
 import ProductArt from '../components/ProductArt';
 import { useStore } from '../context/Store';
-import { api, ApiError } from '../lib/api';
+import { api, ApiError, CART_KEY } from '../lib/api';
+import { local } from '../lib/format';
 import { dinero, ESTADOS_PEDIDO, fecha, METODOS_PAGO } from '../lib/format';
 import { Link, useRouter } from '../lib/router';
 import type { Pedido } from '../lib/types';
@@ -148,6 +149,7 @@ export function Checkout() {
     try {
       const r = await api<{ pedido: Pedido }>('/pedidos', { method: 'POST', body: { envio: form, metodo_pago: metodo } });
       setPedido(r.pedido);
+      local.del(CART_KEY);
       setCarrito({ ...carrito, id: null, items: [], cantidad_total: 0, subtotal: 0, envio: 0, total: 0 });
       window.scrollTo({ top: 0 });
     } catch (err) {

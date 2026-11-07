@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 dist/
 .local/
 .netlify/
@@ -8,3 +8,4 @@ dist/
 docs/capturas/*.tmp
 *.log
 .DS_Store
+dist-single/

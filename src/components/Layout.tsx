@@ -164,7 +164,7 @@ export function Footer() {
           <h2 className="font-display text-xl font-bold">Ayuda</h2>
           <ul className="mt-3 space-y-2 text-niebla">
             <li><Link to="/pedidos" className="hover:text-hueso">Mis pedidos</Link></li>
-            <li><Link to="/nosotros#politicas" className="hover:text-hueso">Envíos y devoluciones</Link></li>
+            <li><Link to="/nosotros?seccion=politicas" className="hover:text-hueso">Envíos y devoluciones</Link></li>
             <li><Link to="/contacto" className="hover:text-hueso">Contacto</Link></li>
             <li><button type="button" onClick={() => abrirSpot()} className="hover:text-hueso">Hablar con Spot</button></li>
           </ul>

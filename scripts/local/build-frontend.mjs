@@ -14,7 +14,12 @@ cpSync('public', out, { recursive: true });
 await build({
   entryPoints: ['src/main.tsx'], bundle: true, minify: true, format: 'esm', target: 'es2020',
   outfile: join(out, 'assets/app.js'), jsx: 'automatic', loader: { '.css': 'empty' },
-  define: { 'process.env.NODE_ENV': '"production"', 'import.meta.env.VITE_HERO_IMAGE_URL': JSON.stringify(process.env.VITE_HERO_IMAGE_URL ?? '') },
+  define: {
+    'process.env.NODE_ENV': '"production"',
+    'import.meta.env.VITE_HERO_IMAGE_URL': JSON.stringify(process.env.VITE_HERO_IMAGE_URL ?? ''),
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL ?? ''),
+    'import.meta.env.VITE_ROUTER': JSON.stringify(process.env.VITE_ROUTER ?? ''),
+  },
   logLevel: 'warning',
 });
 
@@ -40,3 +45,17 @@ const html = readFileSync('index.html', 'utf8')
   .replace('</head>', '  <link rel="stylesheet" href="/assets/app.css" />\n  </head>');
 writeFileSync(join(out, 'index.html'), html);
 console.log('OK dist/', statSync(join(out, 'assets/app.js')).size, 'bytes JS,', statSync(join(out, 'assets/app.css')).size, 'bytes CSS');
+
+// --single: un único HTML autocontenido (JS, CSS y favicon en línea) para hosting de un archivo.
+if (process.argv.includes('--single')) {
+  const js = readFileSync(join(out, 'assets/app.js'), 'utf8').replace(/<\/script/gi, '<\\/script');
+  const css = readFileSync(join(out, 'assets/app.css'), 'utf8');
+  const fav = 'data:image/svg+xml;base64,' + Buffer.from(readFileSync('public/favicon.svg')).toString('base64');
+  const single = html
+    .replace('<link rel="icon" href="/favicon.svg" type="image/svg+xml" />', `<link rel="icon" href="${fav}" type="image/svg+xml" />`)
+    .replace('  <link rel="stylesheet" href="/assets/app.css" />\n', `  <style>${css}</style>\n`)
+    .replace('<script type="module" src="/assets/app.js"></script>', () => `<script type="module">${js}</script>`);
+  mkdirSync('dist-single', { recursive: true });
+  writeFileSync('dist-single/index.html', single);
+  console.log('OK dist-single/index.html', Buffer.byteLength(single), 'bytes');
+}

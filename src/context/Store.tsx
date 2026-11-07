@@ -1,6 +1,7 @@
 /** Estado global: sesión, carrito, avisos (toasts) y apertura del asistente Spot. */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { api, ApiError } from '../lib/api';
+import { api, ApiError, CART_KEY, SESSION_KEY } from '../lib/api';
+import { local } from '../lib/format';
 import type { Carrito, Usuario } from '../lib/types';
 
 interface Toast { id: number; texto: string; tono: 'ok' | 'error' }
@@ -67,6 +68,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await api('/auth/logout', { method: 'POST', body: {} }).catch(() => {});
+    local.del(SESSION_KEY); local.del(CART_KEY);
     setUsuario(null); setCarrito(null);
     avisar('Cerraste sesión.');
   }, [avisar]);

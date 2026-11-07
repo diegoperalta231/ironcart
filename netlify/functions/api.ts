@@ -29,7 +29,7 @@ import {
 } from '../lib/http';
 import {
   CART_COOKIE, cartIdFromCookie, currentUser, ipKey, isUuid, newToken, rateLimit, requireUser,
-  SESSION_COOKIE, SESSION_TTL_HOURS, sha256, type Usuario,
+  SESSION_COOKIE, SESSION_TTL_HOURS, sessionToken, sha256, type Usuario,
 } from '../lib/auth';
 import * as v from '../lib/validate';
 import { handleSpotMessage } from '../lib/spot/spot';
@@ -145,7 +145,8 @@ async function startSession(req: Request, email: string, password: string) {
   const headers = new Headers();
   headers.append('set-cookie', setCookie(req, SESSION_COOKIE, token, SESSION_TTL_HOURS * 3600));
   if (carrito.id) headers.append('set-cookie', setCookie(req, CART_COOKIE, carrito.id, 60 * 60 * 24 * 30));
-  return json({ usuario: r.usuario, carrito }, 200, headers);
+  // El token también va en el cuerpo para frontends en otro dominio (se guarda y se envía en x-ic-session).
+  return json({ usuario: r.usuario, carrito, sesion_token: token, expira_en_horas: SESSION_TTL_HOURS }, 200, headers);
 }
 
 on('POST', /^\/api\/auth\/registro$/, async (req, _p, ctx) => {
@@ -166,8 +167,8 @@ on('POST', /^\/api\/auth\/login$/, async (req, _p, ctx) => {
 });
 
 on('POST', /^\/api\/auth\/logout$/, async (req) => {
-  const token = req.headers.get('cookie')?.match(/(?:^|;\s*)ic_session=([^;]+)/)?.[1];
-  if (token) await rpc('api_sesion_cerrar', { token_hash: sha256(decodeURIComponent(token)) });
+  const token = sessionToken(req);
+  if (token) await rpc('api_sesion_cerrar', { token_hash: sha256(token) });
   const headers = new Headers();
   headers.append('set-cookie', clearCookie(req, SESSION_COOKIE));
   headers.append('set-cookie', clearCookie(req, CART_COOKIE));
@@ -280,8 +281,8 @@ export default async (req: Request, context: Ctx = {}): Promise<Response> => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
   try {
     assertSameOrigin(req);
-    // Acepta la ruta pública (/api/...) y la interna de Netlify (/.netlify/functions/api/...).
-    const path = new URL(req.url).pathname.replace(/^\/\.netlify\/functions\/api(?=\/|$)/, '/api').replace(/\/+$/, '') || '/';
+    // Acepta /api/..., /.netlify/functions/api/... y /functions/v1/api/... (Supabase Edge).
+    const path = new URL(req.url).pathname.replace(/^.*?\/api(?=\/|$)/, '/api').replace(/\/+$/, '') || '/';
     let pathMatched = false;
     for (const [method, re, handler] of routes) {
       const m = path.match(re);

@@ -18,8 +18,11 @@ export const ipKey = (ip: string) => sha256(`${env.ipHashSalt}:${ip}`).slice(0, 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (s: unknown): s is string => typeof s === 'string' && UUID.test(s);
 
+/** Token de sesión: cabecera x-ic-session (frontend en otro dominio) o cookie HttpOnly (mismo dominio). */
+export const sessionToken = (req: Request) => req.headers.get('x-ic-session') || getCookie(req, SESSION_COOKIE);
+
 export async function currentUser(req: Request): Promise<Usuario | null> {
-  const token = getCookie(req, SESSION_COOKIE);
+  const token = sessionToken(req);
   if (!token || token.length < 20 || token.length > 100) return null;
   return rpc<Usuario | null>('api_sesion_usuario', { token_hash: sha256(token) });
 }
@@ -31,7 +34,7 @@ export async function requireUser(req: Request): Promise<Usuario> {
 }
 
 export function cartIdFromCookie(req: Request): string | null {
-  const c = getCookie(req, CART_COOKIE);
+  const c = req.headers.get('x-ic-cart') || getCookie(req, CART_COOKIE);
   return isUuid(c) ? c : null;
 }
 
