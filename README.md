@@ -245,7 +245,7 @@ Latencia de extremo a extremo observada: 1,1 a 3,7 s por mensaje. **Defectos enc
 | Cliente / anónimo llamando a `/admin/acciones/:id/confirmar` | 403 / 401; nada aplicado |
 | Admin: "Sube el stock… en 5 unidades" → Confirmar | Propuesta 25 → 30; aplicada solo tras confirmar; auditada |
 | Admin: crear producto nuevo + restaurar stock en una sola orden → Confirmar | Producto id 41 creado, stock vuelto a 25 |
-| Admin: cambiar precio 18.50 → 17.90 → "ahora elimínalo" → Confirmar | Ambos aplicados y auditados |
+| Admin: cambiar precio 18.50 → 17.90 → Confirmar → "ahora elimínalo" | Precio aplicado (17.90); eliminación propuesta correctamente (sin ventas → borrado definitivo) |
 
 Defecto encontrado y corregido: después de confirmar, Spot "corregía" su propuesta anterior al ver los valores ya actualizados → la nota que se guarda al confirmar ahora detalla lo aplicado y el prompt indica que esos cambios ya están hechos.
 
